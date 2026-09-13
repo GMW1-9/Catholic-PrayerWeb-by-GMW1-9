@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Angelus</title>
+
+<style>
+  body {
+    background: #6b6c6b;
+    margin: 0;
+    padding: 20px;
+    font-family: Arial, sans-serif;
+  }
+
+  h1, h3 {
+    text-align: center;
+    color: #fff;
+  }
+
+  /* Prayer box styling with proper centering and max-width */
+  p.prayer-box {
+    max-width: 500px;
+    margin: 20px auto;
+    padding: 30px;
+    background: #3a4356;
+    color: #fff;
+    border-radius: 8px;
+    text-align: center;
+    line-height: 1.8;
+    box-shadow: 0 0 20px rgba(0,229,255,.5);
+  }
+
+  /* Styling to make the buttons look nice on the screen */
+  .btn {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    font-size: 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+    text-decoration: none;
+    display: inline-block;
+    margin: 5px;
+  }
+
+  .btn:hover {
+    background-color: #0056b3;
+  }
+
+  /* PRINT RULES */
+  @media print {
+    /* Hide the buttons on the paper */
+    .btn {
+      display: none !important;
+    }
+
+    body {
+      background: white;
+      color: black;
+    }
+
+    p.prayer-box {
+      background: none;
+      color: black;
+      box-shadow: none;
+      max-height: 100vh; 
+      overflow: hidden; /* Prevents spilling onto page 2 */
+    }
+  }
+
+  /* Shrink the default printer margins to fit more on one page */
+  @page {
+    margin: 10mm; 
+  }
+</style>
+</head>
+<body>
+
+<div style="text-align: center;">
+  <button class="btn print-btn" onclick="window.print()">🖨 Print Page</button>
+  <a href="https://gmw1-9.github.io/Angelus/" class="btn link-btn" target="_blank">Visit Angelus Page</a>
+</div>
+   
+<h1>The Angelus</h1>
+<h3>Said at 12am/6am/12pm/6pm</h3>
+
+<p class="prayer-box">
+  The Angel of the Lord declared unto Mary. 
+  <br><strong>And She was conceived by the Holy Spirit.</strong>
+  <br>
+  <br><em>Hail Mary full of grace the Lord is with you blessed are thou
+  <br>among Women and blessed is the fruit of thy womb Jesus
+  <br>Holy Mary Mother of God pray for sinners now 
+  <br>and at the hour of our death. 
+  <br>Amen.</em>
+  <br>
+  <br> 
+  <br>Behold the handmaid of the Lord.
+  <br><strong>Be it done according to Thy Word</strong>
+  <br>
+  <br><em>Hail Mary...</em>
+  <br>
+  <br>
+  <br>And the Word was made Flesh.
+  <br><strong>And dwelt among us</strong>
+  <br>
+  <br><em>Hail Mary...</em>
+  <br>
+  <br>
+  <br>Pray for us, O Holy Mother of God
+  <br><strong>that we may be made Worthy of the promises of Christ.</strong>
+  <br>
+  <br>
+  <br>Let us pray: Pour forth, we beseech thee, O Lord,
+  <br>Thy Grace into our hearts; 
+  <br>That we to whom the Incarnation of Christ,
+  <br>Thy Son, 
+  <br>was made known by the message of an Angel,
+  <br>May by His Passion and Cross,
+  <br>be brought to the glory of His Resurrection.
+  <br>Through the same Christ Our Lord.
+  <br>Amen.
+</p>
+
+</body>
+</html>
