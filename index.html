@@ -820,25 +820,128 @@
   }
 </style>
 
-<!-- 2. HTML LAYOUT (The actual visible elements of the widget) -->
-<div id="notes-widget-bubble" onclick="toggleNotesPanel()" title="Open Notes">🗒</div>
+<!-- 2. HTML LAYOUT -->
+<div id="notes-widget-bubble" title="Open Notes">🗒</div>
 
 <div id="notes-widget-panel">
   <div class="widget-header">
     <h3>🗒 Notes</h3>
-    <button class="close-panel-btn" onclick="toggleNotesPanel()">×</button>
+    <button class="close-panel-btn" type="button" aria-label="Close notes">×</button>
   </div>
 
   <div class="widget-main">
     <div class="input-area">
       <input id="noteInput" placeholder="Write a note..." enterkeyhint="done" />
-      <button onclick="addNote()">Add</button>
+      <button type="button" id="addNoteBtn">Add</button>
     </div>
 
     <div id="notesList"></div>
   </div>
 </div>
 
+<script>
+  const NOTES_KEY = "gmw19_notes";
+  let notes = JSON.parse(localStorage.getItem(NOTES_KEY) || "[]");
+
+  const notesBubble = document.getElementById("notes-widget-bubble");
+  const notesPanel = document.getElementById("notes-widget-panel");
+  const noteInput = document.getElementById("noteInput");
+  const addNoteBtn = document.getElementById("addNoteBtn");
+  const closePanelBtn = document.querySelector(".close-panel-btn");
+  const notesList = document.getElementById("notesList");
+
+  function toggleNotesPanel() {
+    const isVisible = notesPanel.style.display === "flex";
+    notesPanel.style.display = isVisible ? "none" : "flex";
+
+    if (!isVisible && !window.matchMedia("(max-width: 480px)").matches) {
+      noteInput.focus();
+    }
+  }
+
+  function saveNotes() {
+    localStorage.setItem(NOTES_KEY, JSON.stringify(notes));
+  }
+
+  function renderNotes() {
+    notesList.innerHTML = "";
+
+    notes.forEach((note, index) => {
+      const noteText = typeof note === "object" ? note.text : note;
+      const noteTime = typeof note === "object" ? note.time : "";
+
+      const wrapper = document.createElement("div");
+      wrapper.className = "note";
+
+      const content = document.createElement("div");
+      content.className = "note-content";
+
+      const textEl = document.createElement("div");
+      textEl.className = "note-text";
+      textEl.textContent = noteText;
+
+      content.appendChild(textEl);
+
+      if (noteTime) {
+        const timeEl = document.createElement("div");
+        timeEl.className = "note-time";
+        timeEl.textContent = noteTime;
+        content.appendChild(timeEl);
+      }
+
+      const deleteBtn = document.createElement("button");
+      deleteBtn.className = "delete";
+      deleteBtn.type = "button";
+      deleteBtn.textContent = "X";
+      deleteBtn.addEventListener("click", () => {
+        notes.splice(index, 1);
+        saveNotes();
+        renderNotes();
+      });
+
+      wrapper.appendChild(content);
+      wrapper.appendChild(deleteBtn);
+      notesList.appendChild(wrapper);
+    });
+  }
+
+  function addNote() {
+    const text = noteInput.value.trim();
+
+    if (!text) {
+      noteInput.focus();
+      return;
+    }
+
+    notes.push({
+      text,
+      time: new Date().toLocaleString([], {
+        year: "numeric",
+        month: "numeric",
+        day: "numeric",
+        hour: "2-digit",
+        minute: "2-digit"
+      })
+    });
+
+    noteInput.value = "";
+    saveNotes();
+    renderNotes();
+    noteInput.focus();
+  }
+
+  notesBubble.addEventListener("click", toggleNotesPanel);
+  closePanelBtn.addEventListener("click", toggleNotesPanel);
+  addNoteBtn.addEventListener("click", addNote);
+
+  noteInput.addEventListener("keydown", (event) => {
+    if (event.key === "Enter") {
+      event.preventDefault();
+      addNote();
+    }
+  });
+
+  renderNotes();
 <!-- 3. FUNCTIONALITY SCRIPT (Handles local storage database, adding, and removing) -->
 <script>
   let notes = JSON.parse(localStorage.getItem("gmw19_notes")) || [];
@@ -876,47 +979,7 @@
           \${time ? `<div class="note-time">\${time}</div>` : ''}
         </div>
         <button class="delete" onclick="deleteNote(${index})">X</button>
-      `;
-
-      list.appendChild(div);
-    });
-  }
-
-  function addNote() {
-    const input = document.getElementById("noteInput");
-    if (!input.value.trim()) return;
-
-    const now = new Date();
-    const timestamp = now.toLocaleString([], { 
-      year: 'numeric', 
-      month: 'numeric', 
-      day: 'numeric', 
-      hour: '2-digit', 
-      minute: '2-digit' 
-    });
-
-    notes.push({
-      text: input.value,
-      time: timestamp
-    });
     
-    input.value = "";
-
-    saveNotes();
-    renderNotes();
-  }
-
-  function deleteNote(index) {
-    notes.splice(index, 1);
-    saveNotes();
-    renderNotes();
-  }
-
-  document.getElementById("noteInput").addEventListener("keydown", function(event) {
-    if (event.key === "Enter") {
-      addNote();
-    }
-  });
 
   renderNotes();
 </script>
