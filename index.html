@@ -1,1486 +1,1328 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/> 
-   <!-- litte icon -->
-    <link rel="icon" type="image/png" href="cpw.png">
-    
-    <!-- PWA Manifest Link -->
-    <link rel="manifest" href="manifest.json">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-    <!-- tab title-->
-    <title> Catholic PrayerWeb by: GMW1:9 - Community Prayer & Encouragement Wall + Prayers to Pray</title>
-    
-    <meta name="description" content="Welcome to the Catholic PrayerWeb. Share live community prayer requests, and explore Catholic resources, but still new on the web." />
-    <meta name="keywords" content="Catholic prayer wall, Catholic web, GMW 1:9 prayer web, Cathoilc prayerweb by gmw1:9, prayer requests, Catholic resources, GMW1:9, Prayer web, Encouragement Wall, GMW1:9 CPW, cpw, CPW,gmw1:9, gmw19,  " />
-    <meta name="author" content="GMW1:9" />
-    <meta property="og:site_name" content="Catholic PrayerWeb" />
-    <meta name="google-site-verification" content="3stDQW9hTwIxAOmMYjO45z64O8Mi3EVnajz1htI60pA" />
-    
-    <!-- Script to register the service worker -->
-    <script>
-      if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-          navigator.serviceWorker.register('sw.js');
-        });
-      }
-    </script>
+  <title>Catholic PrayerWeb by GMW1:9</title>
 
-    <style>
+  <meta
+    name="description"
+    content="Share prayer requests, encouragement, Catholic prayers, and private feedback with the founder."
+  />
+
+  <link rel="icon" type="image/png" href="cpw.png" />
+  <link rel="manifest" href="manifest.json" />
+
+  <style>
+    @import url("https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700&display=swap");
+
+    :root {
+      --background: #6b6c6b;
+      --header: #3a4356;
+      --card: #111827;
+      --card-light: #1f2937;
+      --cyan: #00e5ff;
+      --text: #ffffff;
+      --muted: #cbd5e1;
+      --danger: #ef4444;
+      --success: #10b981;
+    }
+
     * {
-        margin:0;
-        padding:0;
-        box-sizing:border-box;
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
     }
 
     body {
-        background:#6b6c6b;
-        color:#4a1508;
-        font-family:'Orbitron',sans-serif;
-        overflow-x:hidden;
+      min-height: 100vh;
+      overflow-x: hidden;
+      background: var(--background);
+      color: var(--text);
+      font-family: "Orbitron", Arial, sans-serif;
+    }
+
+    button,
+    input,
+    textarea {
+      font: inherit;
+    }
+
+    button {
+      cursor: pointer;
     }
 
     header {
-        width:100%;
-        padding:20px;
-        background:#3a4356;
-        display:flex;
-        justify-content:space-between;
-        align-items:center;
-        position:sticky;
-        top:0;
-        z-index:100;
-        box-shadow:0 0 20px rgba(0,229,255,.5);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      width: 100%;
+      padding: 18px 25px;
+      background: var(--header);
+      box-shadow: 0 0 20px rgba(0, 229, 255, 0.5);
     }
 
     header h1 {
-        font-size:2rem;
-        color: white;
+      font-size: clamp(1.1rem, 3vw, 2rem);
+      white-space: nowrap;
     }
 
     .search-box {
-        width:300px;
-        max-width:30%;
+      width: 300px;
+      max-width: 35%;
     }
 
     .search-box input {
-        width:100%;
-        padding:12px;
-        border:none;
-        border-radius:12px;
-        outline:none;
-        background:#111827;
-        color:white;
-        font-size:1rem;
+      width: 100%;
+      padding: 11px 14px;
+      border: 0;
+      border-radius: 10px;
+      outline: none;
+      background: #111827;
+      color: white;
     }
 
-    .hero {
-        height:400px;
-        display:flex;
-        justify-content:center;
-        align-items:center;
-        text-align:center;
-        background:url('images/pic.png');
-        background-size:cover;
-        background-position:center;
+    .auth-area {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      white-space: nowrap;
     }
 
-    .hero-content h2 {
-        font-size:4rem;
-        margin-bottom:20px;
-        text-shadow:0 0 20px cyan;
-        color: white;
-    }
-
-    .hero-content h4 {
-        font-size:2rem;
-        margin-bottom:20px;
-        text-shadow:0 0 20px cyan;
-        color: white;
-    }
-
-    .hero-content p {
-        font-size:1.2rem;
-        margin-bottom:30px;
-        color: #e2e8f0;
-    }
-
-    .hero-content button {
-        padding:15px 30px;
-        font-size:1rem;
-        border:none;
-        border-radius:15px;
-        background:white;
-        color:black;
-        cursor:pointer;
-        font-weight:bold;
-        transition:.3s;
-        margin: 5px;
-    }
-
-    .hero-content button:hover {
-        transform:scale(1.1);
+    .outline-btn,
+    .primary-btn,
+    .danger-btn {
+      border: 0;
+      border-radius: 10px;
+      padding: 10px 14px;
+      font-weight: bold;
     }
 
     .outline-btn {
-        background: transparent !important;
-        color: white !important;
-        border: 2px solid #00e5ff !important;
+      border: 2px solid var(--cyan);
+      background: transparent;
+      color: white;
+    }
+
+    .primary-btn {
+      background: var(--cyan);
+      color: #000;
+    }
+
+    .danger-btn {
+      background: var(--danger);
+      color: white;
+    }
+
+    .hero {
+      display: flex;
+      min-height: 410px;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 20px;
+      text-align: center;
+      background:
+        linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.5)),
+        url("images/pic.png") center / cover;
+    }
+
+    .hero-content p {
+      margin-bottom: 12px;
+      color: #e2e8f0;
+    }
+
+    .hero-content h2 {
+      margin-bottom: 15px;
+      font-size: clamp(2rem, 7vw, 4rem);
+      text-shadow: 0 0 20px var(--cyan);
+    }
+
+    .hero-content h4 {
+      margin-bottom: 25px;
+      font-size: clamp(1rem, 4vw, 2rem);
+      text-shadow: 0 0 20px var(--cyan);
+    }
+
+    .hero-content button {
+      margin: 5px;
+      padding: 13px 22px;
+      border: 0;
+      border-radius: 12px;
+      background: white;
+      color: black;
+      font-weight: bold;
+    }
+
+    .hero-content button:hover,
+    .card:hover {
+      transform: translateY(-3px);
     }
 
     .section-title {
-        font-size:2rem;
-        padding:30px 40px 10px;
-        color: white;
+      padding: 30px 40px 10px;
+      font-size: clamp(1.3rem, 4vw, 2rem);
     }
 
     .prayers-grid {
-        display:grid;
-        grid-template-columns:repeat(3, 1fr);
-        gap:25px;
-        padding:30px 40px 60px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 25px;
+      padding: 30px 40px 60px;
     }
 
-    @media (max-width: 900px) {
-        .prayers-grid {
-            grid-template-columns:repeat(auto-fit, minmax(260px, 1fr));
-        }
+    .card,
+    .container {
+      border: 1px solid #1f2937;
+      border-radius: 18px;
+      background: var(--card);
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.45);
     }
 
-    .prayer-card {
-        background:#111827;
-        border-radius:10px;
-        overflow:hidden;
-        transition:.3s;
-        cursor:pointer;
-        box-shadow:0 0 20px rgba(0,0,0,.5);
-        position:relative;
-        border: 1px solid #1f2937;
+    .card {
+      overflow: hidden;
+      transition: 0.25s;
     }
 
-    .prayer-card:hover {
-        transform:translateY(-10px) scale(1.03);
-        box-shadow:0 0 30px rgba(0,229,255,.4);
+    .card.hidden {
+      display: none;
     }
 
-    .prayer-info {
-        padding:20px;
+    .card-content {
+      padding: 22px;
     }
 
-    .prayer-info h3 {
-        margin-bottom:10px;
-        font-size:1.3rem;
-        color: white;
+    .card h3 {
+      margin-bottom: 10px;
+      font-size: 1.15rem;
     }
 
-    .prayer-info p {
-        color:#a5b4fc;
-        font-size:.9rem;
+    .card p {
+      min-height: 42px;
+      color: #a5b4fc;
+      font-family: Arial, sans-serif;
+      line-height: 1.4;
     }
 
-    .play-btn {
-        margin-top:15px;
-        width:100%;
-        padding:12px;
-        border:none;
-        border-radius:12px;
-        background:#00e5ff;
-        color:black;
-        font-weight:bold;
-        cursor:pointer;
-        transition:.3s;
-    }
-
-    .play-btn:hover {
-        transform:scale(1.03);
+    .full-btn {
+      width: 100%;
+      margin-top: 18px;
+      padding: 12px;
+      border: 0;
+      border-radius: 10px;
+      background: var(--cyan);
+      color: #000;
+      font-weight: bold;
     }
 
     .prayer-section {
-        padding: 20px 40px 60px;
+      padding: 20px 40px 60px;
     }
 
-    .prayer-container {
-        background: #111827;
-        border: 1px solid #1f2937;
-        border-radius: 25px;
-        padding: 30px;
-        box-shadow: 0 0 20px rgba(0,0,0,.5);
+    .container {
+      padding: 28px;
     }
 
-    .prayer-form {
-        display: flex;
-        flex-direction: column;
-        gap: 15px;
-        margin-bottom: 30px;
+    .form {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      margin-bottom: 25px;
     }
 
-    .prayer-form input, .prayer-form textarea {
-        width: 100%;
-        padding: 12px;
-        border: 1px solid #374151;
-        border-radius: 12px;
-        background: #1f2937;
-        color: white;
-        font-size: 1rem;
-        outline: none;
-        font-family: 'Orbitron', sans-serif;
+    .form input,
+    .form textarea,
+    .auth-form input {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #374151;
+      border-radius: 10px;
+      outline: none;
+      background: #1f2937;
+      color: white;
     }
 
-    .prayer-form textarea {
-        resize: vertical;
-        height: 100px;
+    .form textarea {
+      min-height: 110px;
+      resize: vertical;
     }
 
-    .prayer-form button {
-        padding: 12px;
-        border: none;
-        border-radius: 12px;
-        background: #00e5ff;
-        color: black;
-        font-weight: bold;
-        cursor: pointer;
-        transition: .3s;
-        font-family: 'Orbitron', sans-serif;
+    .status {
+      min-height: 20px;
+      margin-bottom: 10px;
+      color: var(--cyan);
+      font-size: 0.85rem;
     }
 
-    .prayer-form button:hover {
-        transform: scale(1.02);
+    .list {
+      display: flex;
+      max-height: 450px;
+      flex-direction: column;
+      gap: 14px;
+      overflow-y: auto;
     }
 
-    .prayer-list {
-        display: flex;
-        flex-direction: column;
-        gap: 15px;
-        max-height: 400px;
-        overflow-y: auto;
+    .prayer-item,
+    .chat-item {
+      position: relative;
+      padding: 16px 18px;
+      border-left: 4px solid var(--cyan);
+      border-radius: 12px;
+      background: var(--card-light);
     }
 
-    .prayer-item {
-        background: #1f2937;
-        padding: 15px 20px;
-        border-radius: 15px;
-        border-left: 4px solid #00e5ff;
-        position: relative;
+    .prayer-item h4,
+    .chat-item h5 {
+      margin-bottom: 7px;
     }
 
-    .prayer-item h4 {
-        color: white;
-        font-size: 1.1rem;
-        margin-bottom: 5px;
+    .prayer-item p,
+    .chat-item p {
+      margin-bottom: 8px;
+      color: var(--muted);
+      font-family: Arial, sans-serif;
+      line-height: 1.45;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
     }
 
-    .prayer-item p {
-        color: #cbd5e1;
-        font-size: 0.95rem;
-        margin-bottom: 8px;
+    .date {
+      color: #94a3b8;
+      font-family: Arial, sans-serif;
+      font-size: 0.75rem;
     }
 
-    .prayer-item span {
-        font-size: 0.75rem;
-        color: #94a3b8;
+    .item-actions {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      display: flex;
+      gap: 5px;
     }
 
-    .delete-btn {
-        position: absolute;
-        top: 15px;
-        right: 15px;
-        background: #ef4444;
-        color: white;
-        border: none;
-        padding: 5px 10px;
-        font-size: 0.75rem;
-        border-radius: 6px;
-        cursor: pointer;
-        font-family: 'Orbitron', sans-serif;
-        transition: 0.2s;
+    .item-actions button {
+      padding: 4px 7px;
+      border: 0;
+      border-radius: 5px;
+      font-size: 0.7rem;
     }
 
-    .delete-btn:hover {
-        background: #dc2626;
+    .delete-item {
+      background: var(--danger);
+      color: white;
     }
 
-    /* Smaller styling targeted specifically to chat popup buttons */
-    .chat-msg-item .delete-btn {
-        top: 8px;
-        right: 8px;
-        padding: 2px 6px;
-        font-size: 0.62rem;
-        border-radius: 4px;
-        line-height: 1;
+    .reply-item {
+      background: var(--cyan);
+      color: #000;
     }
 
-    .chat-msg-item .chat-reply-btn {
-        right: 52px;
-        background: #00e5ff;
-        color: black;
-    }
-
-    .chat-msg-item .chat-reply-btn:hover {
-        background: #00b8cc;
-    }
-
-    /* Floating Chat Widget & Bubble Styles */
-    .chat-widget-btn {
-        position: fixed;
-        bottom: 25px;
-        right: 25px;
-        width: 60px;
-        height: 60px;
-        border-radius: 50%;
-        background: #00e5ff;
-        color: #111827;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        cursor: pointer;
-        box-shadow: 0 0 20px rgba(0, 229, 255, 0.6);
-        z-index: 1000;
-        transition: transform 0.3s, background-color 0.3s;
-    }
-
-    .chat-widget-btn:hover {
-        transform: scale(1.1);
-        background: #ffffff;
+    .chat-widget {
+      position: fixed;
+      right: 25px;
+      bottom: 25px;
+      z-index: 900;
+      display: grid;
+      width: 60px;
+      height: 60px;
+      place-items: center;
+      border-radius: 50%;
+      background: var(--cyan);
+      color: #111827;
+      box-shadow: 0 0 20px rgba(0, 229, 255, 0.6);
+      font-size: 1.5rem;
     }
 
     .chat-popup {
-        position: fixed;
-        bottom: 95px;
-        right: 25px;
-        width: 340px;
-        max-width: 90vw;
-        max-height: 520px;
-        background: #111827;
-        border: 1px solid #1f2937;
-        border-radius: 20px;
-        box-shadow: 0 0 25px rgba(0, 229, 255, 0.3);
-        display: none;
-        flex-direction: column;
-        z-index: 1000;
-        overflow: hidden;
+      position: fixed;
+      right: 25px;
+      bottom: 95px;
+      z-index: 901;
+      display: none;
+      width: 350px;
+      max-width: calc(100vw - 30px);
+      max-height: 600px;
+      flex-direction: column;
+      overflow: hidden;
+      border: 1px solid #374151;
+      border-radius: 18px;
+      background: var(--card);
+      box-shadow: 0 0 25px rgba(0, 229, 255, 0.3);
     }
 
-    .chat-popup-header {
-        background: #1f2937;
-        padding: 12px 16px;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        border-bottom: 1px solid #374151;
+    .chat-popup.open {
+      display: flex;
     }
 
-    .chat-popup-header h3 {
-        color: white;
-        font-size: 1rem;
+    .popup-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 16px;
+      background: var(--card-light);
     }
 
-    .chat-popup-close {
-        background: transparent;
-        border: none;
-        color: #ef4444;
-        font-size: 1.1rem;
-        cursor: pointer;
-        font-weight: bold;
+    .popup-header button {
+      border: 0;
+      background: transparent;
+      color: var(--danger);
+      font-size: 1.2rem;
     }
 
-    .chat-popup-body {
-        padding: 15px;
-        display: flex;
-        flex-direction: column;
-        overflow-y: auto;
+    .popup-body {
+      padding: 15px;
+      overflow-y: auto;
     }
 
-    .chat-messages {
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
-        max-height: 220px;
-        overflow-y: auto;
-        margin-bottom: 15px;
+    .chat-list {
+      display: flex;
+      max-height: 245px;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 15px;
+      overflow-y: auto;
     }
 
-    .chat-msg-item {
-        background: #1f2937;
-        padding: 10px 14px;
-        border-radius: 12px;
-        border-left: 3px solid #00e5ff;
-        position: relative;
-    }
-
-    .chat-msg-item h5 {
-        color: #00e5ff;
-        font-size: 0.85rem;
-        margin-bottom: 3px;
-    }
-
-    .chat-msg-item p {
-        color: white;
-        font-size: 0.85rem;
-        margin-bottom: 3px;
-    }
-
-    .chat-msg-item span {
-        font-size: 0.68rem;
-        color: #94a3b8;
-    }
-
-    footer {
-        text-align:center;
-        padding:30px;
-        background:#3a4356;
-        color:#94a3b8;
+    .chat-item {
+      padding: 12px;
+      font-size: 0.85rem;
     }
 
     .modal {
-        position:fixed;
-        inset:0;
-        background:rgba(0,0,0,.8);
-        display:none;
-        justify-content:center;
-        align-items:center;
-        z-index:1000;
+      position: fixed;
+      inset: 0;
+      z-index: 1000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      background: rgba(0, 0, 0, 0.82);
+    }
+
+    .modal.open {
+      display: flex;
     }
 
     .modal-content {
-        width:90%;
-        height:90%;
-        background:white;
-        border-radius:20px;
-        overflow:hidden;
-        position:relative;
+      position: relative;
+      width: min(950px, 95vw);
+      height: min(700px, 90vh);
+      overflow: hidden;
+      border-radius: 18px;
+      background: white;
+    }
+
+    .modal-content iframe {
+      width: 100%;
+      height: 100%;
+      border: 0;
     }
 
     .news-content {
-        width: 90%;
-        max-width: 500px;
-        height: auto;
-        max-height: 80vh;
-        padding: 40px 30px;
-        background: #111827;
-        color: white;
-        text-align: left;
-        border: 1px solid #1f2937;
-        box-shadow: 0 0 25px rgba(0, 229, 255, 0.2);
-        overflow-y: auto;
-        position: relative;
-        border-radius: 20px;
+      position: relative;
+      width: min(520px, 95vw);
+      max-height: 85vh;
+      overflow-y: auto;
+      padding: 35px 25px;
+      border-radius: 18px;
+      background: var(--card);
     }
 
     .news-content h2 {
-        margin-bottom: 15px;
-        font-size: 1.8rem;
-        color: white;
-        text-align: center;
+      margin-bottom: 20px;
+      text-align: center;
     }
 
     .news-item {
-        margin-bottom: 20px;
-        border-bottom: 1px solid #1f2937;
-        padding-bottom: 15px;
+      margin-bottom: 18px;
+      padding-bottom: 15px;
+      border-bottom: 1px solid #374151;
     }
 
     .news-item h4 {
-        color: white;
-        font-size: 1.1rem;
-        margin-bottom: 5px;
-        text-align: center;
+      margin-bottom: 5px;
     }
 
     .news-item span {
-        font-size: 0.8rem;
-        color: #94a3b8;
-        display: block;
-        margin-bottom: 8px;
+      display: block;
+      margin-bottom: 7px;
+      color: #94a3b8;
+      font-size: 0.8rem;
     }
 
     .news-item p {
-        color: #cbd5e1;
-        font-size: 0.95rem;
+      color: var(--muted);
+      font-family: Arial, sans-serif;
+      line-height: 1.4;
     }
 
-    .modal iframe {
-        width:100%;
-        height:100%;
-        border:none;
+    .close-modal {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      z-index: 2;
+      width: 36px;
+      height: 36px;
+      border: 0;
+      border-radius: 50%;
+      background: var(--danger);
+      color: white;
+      font-weight: bold;
     }
 
-    .close-btn {
-        position:absolute;
-        top:15px;
-        right:15px;
-        background:red;
-        color:white;
-        border:none;
-        width:40px;
-        height:40px;
-        border-radius:50%;
-        cursor:pointer;
-        font-size:1.2rem;
-        z-index:5;
+    .auth-form {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      margin-top: 20px;
     }
 
-        
-    </style>
+    .auth-form a {
+      color: var(--cyan);
+      font-size: 0.8rem;
+      text-align: right;
+    }
+
+    footer {
+      padding: 30px;
+      background: var(--header);
+      color: #94a3b8;
+      text-align: center;
+    }
+
+    @media (max-width: 800px) {
+      header {
+        flex-wrap: wrap;
+      }
+
+      .search-box {
+        order: 3;
+        width: 100%;
+        max-width: 100%;
+      }
+
+      .prayer-section,
+      .prayers-grid {
+        padding-right: 20px;
+        padding-left: 20px;
+      }
+    }
+  </style>
+
+  <script>
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", () => {
+        navigator.serviceWorker.register("./sw.js").catch(console.error);
+      });
+    }
+  </script>
 </head>
+
 <body>
-
-<header>
+  <header>
     <h1>Catholic PrayerWeb</h1>
-    <div class="search-box">
-        <input type="text" id="search" placeholder="keyword...">
-    </div>
-    
-    <!-- Auth Buttons Container -->
-    <div id="authContainer">
-        <button id="authBtn" onclick="openAuthModal()" class="outline-btn" style="padding: 8px 16px; font-size: 0.9rem;">Sign In / Sign Up</button>
-        <div id="userInfo" style="display: none; color: white; gap: 10px; align-items: center;">
-            <span id="userDisplayName" style="font-size: 0.85rem;"></span>
-            <button id="logoutBtn" style="padding: 6px 12px; font-size: 0.8rem; background: #ef4444; color: white; border: none; border-radius: 8px; cursor: pointer;">Sign Out</button>
-        </div>
-    </div>
-</header>
 
-<section class="hero">
-    <div class="hero-content">
-        <p>Welcome To...</p>
+    <div class="search-box">
+      <input id="searchInput" type="search" placeholder="Search prayers..." />
+    </div>
+
+    <div class="auth-area">
+      <button id="authButton" class="outline-btn">Sign In / Sign Up</button>
+
+      <div id="userArea" hidden>
+        <span id="userName"></span>
+        <button id="logoutButton" class="danger-btn">Sign Out</button>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="hero-content">
+        <p>Welcome to...</p>
         <h2>Catholic PrayerWeb</h2>
         <h4>by: GMW1:9</h4>
-        <button onclick="scrollToPrayers()">START BROWSING</button>
-        <button onclick="openNewsModal()" class="outline-btn">WHAT'S NEW</button>
-    </div>
-</section>
 
-    <!-- ==========================================================================
-     GMW1:9 FLOATING WIDGET - ALL-IN-ONE CODE PACKAGE
-     ========================================================================== -->
+        <button id="browseButton">START BROWSING</button>
+        <button id="newsButton" class="outline-btn">WHAT'S NEW</button>
+      </div>
+    </section>
 
-<!-- 1. STYLE SECTIONS (Handles colors, sizes, and left-corner placement) -->
-<style>
-  #notes-widget-bubble {
-    position: fixed;
-    bottom: 20px;
-    left: 20px;
-    width: 60px;
-    height: 60px;
-    background-color: #007bff;
-    color: white;
-    border-radius: 50%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-size: 28px;
-    cursor: pointer;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-    z-index: 9999;
-    transition: transform 0.2s ease, background-color 0.2s ease;
-    user-select: none;
-  }
+    <h2 class="section-title">Prayers</h2>
 
-  #notes-widget-bubble:hover {
-    transform: scale(1.05);
-    background-color: #0056b3;
-  }
+    <section class="prayers-grid" id="prayersGrid">
+      <article class="card" data-search="the angelus scripture annunciation">
+        <div class="card-content">
+          <h3>The Angelus</h3>
+          <p>A prayer based on Scripture and the Annunciation.</p>
+          <button class="full-btn prayer-button" data-url="./The-Angelus.html">PRAY</button>
+        </div>
+      </article>
 
-  #notes-widget-panel {
-    position: fixed;
-    bottom: 90px;
-    left: 20px;
-    width: 350px;
-    height: 450px;
-    background: #f4f4f4;
-    border-radius: 12px;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.25);
-    z-index: 9998;
-    display: none; 
-    flex-direction: column;
-    overflow: hidden;
-    font-family: Arial, sans-serif;
-  }
+      <article class="card" data-search="our father jesus disciples">
+        <div class="card-content">
+          <h3>Our Father</h3>
+          <p>The prayer Jesus taught His disciples.</p>
+          <button class="full-btn prayer-button" data-url="./Our-Father.html">PRAY</button>
+        </div>
+      </article>
 
-  .widget-header {
-    background: #007bff;
-    color: white;
-    padding: 12px 15px;
-    margin: 0;
-    font-size: 18px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
+      <article class="card" data-search="hail mary mary intercession">
+        <div class="card-content">
+          <h3>Hail Mary</h3>
+          <p>A prayer asking for Mary's intercession.</p>
+          <button class="full-btn prayer-button" data-url="./Hail-Mary.html">PRAY</button>
+        </div>
+      </article>
 
-  .widget-header h3 {
-    margin: 0;
-    font-size: 18px;
-  }
+      <article class="card" data-search="glory be glory god">
+        <div class="card-content">
+          <h3>Glory Be</h3>
+          <p>A prayer giving glory to God.</p>
+          <button class="full-btn prayer-button" data-url="./Glory-Be.html">PRAY</button>
+        </div>
+      </article>
 
-  .close-panel-btn {
-    background: transparent;
-    border: none;
-    color: white;
-    font-size: 20px;
-    cursor: pointer;
-    padding: 0;
-    line-height: 1;
-  }
+      <article class="card" data-search="guardian angel">
+        <div class="card-content">
+          <h3>Guardian Angel Prayer</h3>
+          <p>Coming soon.</p>
+        </div>
+      </article>
+    </section>
 
-  .widget-main {
-    flex: 1;
-    padding: 15px;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-  }
+    <h2 class="section-title">Prayer Notes</h2>
 
-  .input-area {
-    display: flex;
-    gap: 8px;
-    margin-bottom: 12px;
-  }
+    <section class="prayer-section">
+      <div class="container">
+        <form id="notesForm" class="form">
+          <input id="noteInput" type="text" maxlength="500" placeholder="Write a private note..." required />
+          <button class="primary-btn" type="submit">Add Note</button>
+        </form>
 
-  .input-area input {
-    flex: 1;
-    padding: 10px;
-    font-size: 16px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    outline: none;
-  }
+        <div id="notesList" class="list"></div>
+      </div>
+    </section>
 
-  .input-area button {
-    padding: 10px 14px;
-    cursor: pointer;
-    font-size: 14px;
-    border: none;
-    border-radius: 4px;
-    background: #007bff;
-    color: white;
-    font-weight: bold;
-  }
+    <h2 class="section-title">Community Prayer & Encouragement Wall</h2>
 
-  #notesList {
-    flex: 1;
-    overflow-y: auto;
-    padding-right: 2px;
-  }
+    <section class="prayer-section">
+      <div class="container">
+        <p id="prayerStatus" class="status"></p>
 
-  .note {
-    background: white;
-    padding: 10px 12px;
-    margin-bottom: 8px;
-    border-radius: 6px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-  }
+        <form id="prayerForm" class="form">
+          <input id="prayerName" type="text" maxlength="80" placeholder="Your nickname or Anonymous" required />
+          <textarea
+            id="prayerText"
+            maxlength="2000"
+            placeholder="Share your prayer intention or encouragement..."
+            required
+          ></textarea>
+          <button class="primary-btn" type="submit">Submit Prayer or Encouragement</button>
+        </form>
 
-  .note-content {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    gap: 3px;
-    word-break: break-word;
-  }
+        <div id="prayerList" class="list"></div>
+      </div>
+    </section>
+  </main>
 
-  .note-text {
-    font-size: 14px;
-    color: #333;
-  }
+  <button id="chatButton" class="chat-widget" title="Feedback or Questions">💬</button>
 
-  .note-time {
-    font-size: 10px;
-    color: #888;
-  }
-
-  .delete {
-    background: #dc3545;
-    color: white;
-    padding: 4px 8px;
-    cursor: pointer;
-    border-radius: 4px;
-    border: none;
-    margin-left: 8px;
-    font-size: 12px;
-  }
-
-  @media (max-width: 480px) {
-    #notes-widget-panel {
-      width: calc(100% - 40px);
-      height: 70vh;
-      left: 20px;
-      right: 20px;
-    }
-  }
-</style>
-
-<!-- 2. HTML LAYOUT (The actual visible elements of the widget) -->
-<div id="notes-widget-bubble" onclick="toggleNotesPanel()" title="Open Notes">🗒</div>
-
-<div id="notes-widget-panel">
-  <div class="widget-header">
-    <h3>🗒 Notes</h3>
-    <button class="close-panel-btn" onclick="toggleNotesPanel()">×</button>
-  </div>
-
-  <div class="widget-main">
-    <div class="input-area">
-      <input id="noteInput" placeholder="Write a note..." enterkeyhint="done" />
-      <button onclick="addNote()">Add</button>
+  <section id="chatPopup" class="chat-popup" aria-label="Private founder chat">
+    <div class="popup-header">
+      <h3>💬 Feedback / Questions</h3>
+      <button id="closeChatButton" aria-label="Close chat">×</button>
     </div>
 
-    <div id="notesList"></div>
+    <div class="popup-body">
+      <p style="color:#a5b4fc;font:0.8rem Arial;margin-bottom:12px;">
+        Send a private message to the founder.
+      </p>
+
+      <p id="chatStatus" class="status"></p>
+      <div id="chatList" class="chat-list"></div>
+
+      <form id="chatForm" class="form">
+        <input id="chatName" type="text" maxlength="80" placeholder="Your nickname or Anonymous" required />
+        <textarea id="chatText" maxlength="2000" placeholder="Write a message..." required></textarea>
+        <button class="primary-btn" type="submit">Send Message</button>
+      </form>
+    </div>
+  </section>
+
+  <div id="prayerModal" class="modal">
+    <div class="modal-content">
+      <button class="close-modal" id="closePrayerModal">×</button>
+      <iframe id="prayerFrame" title="Prayer"></iframe>
+    </div>
   </div>
-</div>
 
-<!-- 3. FUNCTIONALITY SCRIPT (Handles local storage database, adding, and removing) -->
-<script>
-  let notes = JSON.parse(localStorage.getItem("gmw19_notes")) || [];
+  <div id="newsModal" class="modal">
+    <div class="news-content">
+      <button class="close-modal" id="closeNewsModal">×</button>
 
-  function toggleNotesPanel() {
-    const panel = document.getElementById("notes-widget-panel");
-    if (panel.style.display === "flex") {
-      panel.style.display = "none";
-    } else {
-      panel.style.display = "flex";
-      if (!window.matchMedia("(max-width: 480px)").matches) {
-        document.getElementById("noteInput").focus();
+      <h2>What's New</h2>
+
+      <div class="news-item">
+        <h4>Glory Be</h4>
+        <span>September 2026</span>
+        <p>The Glory Be prayer is now available.</p>
+      </div>
+
+      <div class="news-item">
+        <h4>Community Prayer Wall</h4>
+        <span>July 2026</span>
+        <p>Share and view prayer intentions from the community.</p>
+      </div>
+
+      <div class="news-item">
+        <h4>Private Founder Chat</h4>
+        <span>September 2026</span>
+        <p>Send private feedback and questions directly to the founder.</p>
+      </div>
+
+      <div class="news-item">
+        <h4>Prayer Notes</h4>
+        <span>September 2026</span>
+        <p>Keep private prayer notes on your device.</p>
+      </div>
+    </div>
+  </div>
+
+  <div id="authModal" class="modal">
+    <div class="news-content">
+      <button class="close-modal" id="closeAuthModal">×</button>
+
+      <h2 id="authTitle">Sign In</h2>
+
+      <form id="authForm" class="auth-form">
+        <input id="authNickname" type="text" maxlength="80" placeholder="Nickname" hidden />
+        <input id="authEmail" type="email" placeholder="Email address" required />
+        <input id="authPassword" type="password" placeholder="Password, at least 6 characters" required />
+
+        <a href="#" id="forgotPassword">Forgot Password?</a>
+
+        <p id="authMessage" class="status"></p>
+
+        <button id="authSubmit" class="primary-btn" type="submit">Sign In</button>
+      </form>
+
+      <p style="margin-top:18px;text-align:center;font:0.85rem Arial;color:#cbd5e1;">
+        <span id="authToggleText">Don't have an account?</span>
+        <a href="#" id="authToggleLink" style="color:#00e5ff;">Sign Up</a>
+      </p>
+    </div>
+  </div>
+
+  <footer>© 2026 GMW1:9</footer>
+
+  <script>
+    const notesKey = "gmw19_notes";
+    let notes = readNotes();
+
+    const $ = (id) => document.getElementById(id);
+
+    function readNotes() {
+      try {
+        const saved = JSON.parse(localStorage.getItem(notesKey) || "[]");
+        return Array.isArray(saved) ? saved : [];
+      } catch {
+        return [];
       }
     }
-  }
 
-  function saveNotes() {
-    localStorage.setItem("gmw19_notes", JSON.stringify(notes));
-  }
-
-  function renderNotes() {
-    const list = document.getElementById("notesList");
-    list.innerHTML = "";
-
-    notes.forEach((note, index) => {
-      const text = typeof note === 'object' ? note.text : note;
-      const time = typeof note === 'object' ? note.time : '';
-
-      const div = document.createElement("div");
-      div.className = "note";
-
-      div.innerHTML = `
-        <div class="note-content">
-          <div class="note-text">${text}</div>
-          \${time ? `<div class="note-time">\${time}</div>` : ''}
-        </div>
-        <button class="delete" onclick="deleteNote(${index})">X</button>
-      `;
-
-      list.appendChild(div);
-    });
-  }
-
-  function addNote() {
-    const input = document.getElementById("noteInput");
-    if (!input.value.trim()) return;
-
-    const now = new Date();
-    const timestamp = now.toLocaleString([], { 
-      year: 'numeric', 
-      month: 'numeric', 
-      day: 'numeric', 
-      hour: '2-digit', 
-      minute: '2-digit' 
-    });
-
-    notes.push({
-      text: input.value,
-      time: timestamp
-    });
-    
-    input.value = "";
-
-    saveNotes();
-    renderNotes();
-  }
-
-  function deleteNote(index) {
-    notes.splice(index, 1);
-    saveNotes();
-    renderNotes();
-  }
-
-  document.getElementById("noteInput").addEventListener("keydown", function(event) {
-    if (event.key === "Enter") {
-      addNote();
+    function saveNotes() {
+      localStorage.setItem(notesKey, JSON.stringify(notes));
     }
-  });
 
-  renderNotes();
-</script>
+    function renderNotes() {
+      const list = $("notesList");
+      list.replaceChildren();
 
+      if (notes.length === 0) {
+        const empty = document.createElement("p");
+        empty.textContent = "No private notes yet.";
+        empty.style.color = "#94a3b8";
+        list.appendChild(empty);
+        return;
+      }
 
-<h2 class="section-title">Prayers</h2>
-<section class="prayers-grid" id="prayersGrid">
-    <div class="prayer-card" data-name="The Angelus">
-        <div class="prayer-info">
-            <h3>The Angelus</h3>
-            <p>A prayer based on scripture and the Annunciation</p> 
-            <button class="play-btn" onclick="openPrayer('https://gmw1-9.github.io/Catholic-PrayerWeb-by-GMW1-9/The-Angelus.html')">PRAY</button>
-        </div>
-    </div>
+      notes.forEach((note, index) => {
+        const item = document.createElement("div");
+        item.className = "prayer-item";
 
-    <div class="prayer-card" data-name="Our Father">
-        <div class="prayer-info">
-            <h3>Our Father</h3>
-            <p> The prayer Jesus taught his disciples! </p> 
-            <button class="play-btn" onclick="openPrayer('https://gmw1-9.github.io/Catholic-PrayerWeb-by-GMW1-9/Our-Father.html')">PRAY</button>
-        </div>
-    </div>
+        const text = document.createElement("p");
+        text.textContent = note.text;
 
-     <div class="prayer-card" data-name="Hail Mary">
-        <div class="prayer-info">
-            <h3>Hail Mary</h3>
-            <p> A Prayer asking for Mary's intercession </p> 
-            <button class="play-btn" onclick="openPrayer('https://gmw1-9.github.io/Catholic-PrayerWeb-by-GMW1-9/Hail-Mary.html')">PRAY</button>
-        </div>
-    </div>
+        const date = document.createElement("span");
+        date.className = "date";
+        date.textContent = note.time;
 
-    <div class="prayer-card" data-name="Glory Be">
-        <div class="prayer-info">
-            <h3>Glory Be </h3>
-            <p>A Prayer giving God Glory!</p> 
-    <button class="play-btn" onclick="openPrayer('https://gmw1-9.github.io/Catholic-PrayerWeb-by-GMW1-9/Glory-Be')">PRAY</button> 
-        </div>
-    </div>
+        const actions = document.createElement("div");
+        actions.className = "item-actions";
 
-<div class="prayer-card" data-name="Guardian Angel Prayer">
-        <div class="prayer-info">
-            <h3>Guardian Angel Prayer</h3>
-            <p>COMING SOON</p> 
-           <!-- ADD WHEN MADE <button class="play-btn" onclick="openPrayer('https://gmw1-9.github.io/Guardian-Angel-Prayer/')">PRAY</button> -->
-        </div>
-    </div>
+        const deleteButton = document.createElement("button");
+        deleteButton.className = "delete-item";
+        deleteButton.textContent = "Delete";
+        deleteButton.addEventListener("click", () => {
+          notes.splice(index, 1);
+          saveNotes();
+          renderNotes();
+        });
 
-
-
-                                                          <!--    EXAMPLE    -->
-                                                       <!-- HIGHLIGHT and COPY -->
-    
-    <!-- <div class="prayer-card" data-name="prayer_name HERE"> -->
-    <!--  <div class="prayer-info">-->
-     <!-- <h3>prayer_name HERE</h3>-->
-    <!--   <p>COMING SOON</p> -->
-     <!-- ADD WHEN MADE <button class="play-btn" onclick="openPrayer('https://gmw1-9.github.io/prayer_name HERE/')">PRAY</button> -->
-   <!-- </div>-->
-<!--</div> -->
-
-
-    
-</section>
-
-<h2 class="section-title">Prayer Notes</h2>
-<section class="prayers-grid" id="prayersGrid">
-    <div class="prayer-card" data-name="The Angelus">
-        <div class="prayer-info">
-            <h3>Prayer Notes</h3>
-            <p> a place to keep your notes</p> 
-            <button class="play-btn" onclick="openPrayer('https://gmw1-9.github.io/Catholic-PrayerWeb-by-GMW1-9/prayernotes.html')">PRAY</button>
-        </div>
-    </div>
-    </section>
-    
-<h2 class="section-title">Community Prayer & Encouragement Wall</h2>
-<section class="prayer-section">
-    <div class="prayer-container">
-        <p id="statusMsg" style="color: #00e5ff; font-size: 0.85rem; margin-bottom: 10px;"></p>
-        
-        <form class="prayer-form" id="prayerForm">
-            <input type="text" id="prayerName" placeholder="Your Nickname or 'Anonymous'" required>
-            <textarea id="prayerText" placeholder="Share your Prayer Intention or Encouragement... " required></textarea>
-            <button type="submit">Submit Prayer Request or Encouragement </button>
-        </form>
-        <div class="prayer-list" id="prayerList"></div>
-    </div>
-</section>
-
-<!-- Floating Chat Widget Circle Button -->
-<div class="chat-widget-btn" onclick="toggleChatPopup()" id="chatWidgetBtn" title="Chat with Founder">
-    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-    </svg>
-</div>
-
-<!-- Floating Chat Bubble Window -->
-<div class="chat-popup" id="chatPopup">
-    <div class="chat-popup-header">
-        <h3>💬Feedback/Questions</h3>
-        <button class="chat-popup-close" onclick="toggleChatPopup()">✕</button>
-    </div>
-    <div class="chat-popup-body">
-        <p id="chatStatusMsg" style="color: #00e5ff; font-size: 0.8rem; margin-bottom: 8px;"></p>
-        <p style="color: #a5b4fc; font-size: 0.78rem; margin-bottom: 10px;">
-            Send a direct live message to the founder. Only the founder can read messages sent here!
-        </p>
-        <div class="chat-messages" id="chatMessages"></div>
-        <form class="prayer-form" id="founderChatForm" style="margin-bottom: 0;">
-            <input type="text" id="chatName" placeholder="Your Nickname or 'Anonymous'" required style="padding: 8px 12px; font-size: 0.85rem;">
-            <textarea id="chatText" placeholder="Write a message..." required style="height: 60px; padding: 8px 12px; font-size: 0.85rem;"></textarea>
-            <button type="submit" style="padding: 10px; font-size: 0.85rem;">Send Message</button>
-        </form>
-    </div>
-</div>
-
-<!-- Modals -->
-<div class="modal" id="prayerModal">
-    <div class="modal-content">
-        <button class="close-btn" onclick="closePrayer()">X</button>
-        <iframe id="prayerFrame"></iframe>
-    </div>
-</div>
-
-<div class="modal" id="newsModal">
-    <div class="news-content">
-        <button class="close-btn" onclick="closeNewsModal()">X</button>
-        <h2>What's New</h2>
-
-        <div class="news-item">
-            <h4>Glory be</h4>
-            <h5>OUT NOW!</h5>
-            <span>September 2026</span>
-            <p>A Prayer giving God Glory!</p>
-        </div>
-        
-        <div class="news-item">
-            <h4>Style Update</h4>
-            <span>September 2026</span>
-            <p>Prayer cards now match home page!</p>
-        </div>
-        
-       <div class="news-item">
-            <h4>💬Feedback/Questions Chat</h4>
-            <span>September 2026</span>
-            <p> Send a direct live message to the founder. Only the founder can read messages sent here!</p>
-        </div>
-        
-        <div class="news-item">
-            <h4>Our Father</h4>
-            <span>August 2026</span>
-            <p>The prayer Jesus taught his disciples!</p>
-        </div>
-        
-        <div class="news-item">
-            <h4>Accounts Able NOW</h4>
-            <span>August 2026</span>
-            <p> sign up and get on to any device for sending your prayers the default nickname </p>
-        </div>
-        
-        <div class="news-item">
-            <h4>Self-Deletion Feature Added</h4>
-            <span>July 2026</span>
-            <p>You can now delete prayer requests that you have posted directly from your device.</p>
-        </div>
-        <div class="news-item">
-            <h4>Live Public Prayer Wall Added</h4>
-            <span>July 2026</span>
-            <p>You can now submit and view live prayer intentions from members of the community right on the homepage.</p>
-        </div>
-        <div class="news-item">
-            <h4>The Angelus</h4>
-            <span>July 2026</span>
-            <p>A prayer based on scripture and the Annunciation</p>
-        </div>
-    </div>
-</div>
-
-<!-- Sign In / Sign Up Modal -->
-<div class="modal" id="authModal">
-    <div class="news-content" style="max-width: 400px; text-align: center;">
-        <button class="close-btn" onclick="closeAuthModal()">X</button>
-        <h2 id="authTitle">Sign In</h2>
-        
-        <form id="authForm" style="display: flex; flex-direction: column; gap: 15px; margin-top: 20px;">
-            <input type="text" id="authNickname" placeholder="Nickname (for prayer posts)" style="display: none; width: 100%; padding: 12px; border-radius: 12px; background: #1f2937; color: white; border: 1px solid #374151; font-family: 'Orbitron', sans-serif;">
-            <input type="email" id="authEmail" placeholder="Email Address" required style="width: 100%; padding: 12px; border-radius: 12px; background: #1f2937; color: white; border: 1px solid #374151; font-family: 'Orbitron', sans-serif;">
-            <input type="password" id="authPassword" placeholder="Password (min 6 chars)" required style="width: 100%; padding: 12px; border-radius: 12px; background: #1f2937; color: white; border: 1px solid #374151; font-family: 'Orbitron', sans-serif;">
-            
-            <a href="#" id="forgotPasswordLink" style="font-size: 0.85rem; color: #00e5ff; text-align: right; text-decoration: underline;">Forgot Password?</a>
-
-            <p id="authError" style="color: #ef4444; font-size: 0.85rem; margin: 0;"></p>
-
-            <button type="submit" id="authSubmitBtn" style="padding: 12px; border: none; border-radius: 12px; background: #00e5ff; color: black; font-weight: bold; cursor: pointer; font-family: 'Orbitron', sans-serif;">Sign In</button>
-        </form>
-
-        <p style="margin-top: 20px; font-size: 0.85rem; color: #cbd5e1;">
-            <span id="toggleAuthText">Don't have an account?</span> 
-            <a href="#" id="toggleAuthLink" style="color: #00e5ff; text-decoration: underline;">Sign Up</a>
-        </p>
-    </div>
-</div>
-
-<footer>
-    © 2026 GMW1:9
-</footer>
-
-<script>
-function scrollToPrayers(){
-    document.getElementById('prayersGrid').scrollIntoView({
-        behavior:'smooth'
-    });
-}
-
-function openPrayer(url){
-    document.getElementById('prayerModal').style.display='flex';
-    document.getElementById('prayerFrame').src=url;
-}
-
-function closePrayer(){
-    document.getElementById('prayerModal').style.display='none';
-    document.getElementById('prayerFrame').src='';
-}
-
-function openNewsModal(){
-    document.getElementById('newsModal').style.display='flex';
-}
-
-function closeNewsModal(){
-    document.getElementById('newsModal').style.display='none';
-}
-
-function openAuthModal(){
-    document.getElementById('authModal').style.display='flex';
-}
-
-function closeAuthModal(){
-    document.getElementById('authModal').style.display='none';
-    document.getElementById('authError').textContent = '';
-}
-
-function toggleChatPopup() {
-    const popup = document.getElementById('chatPopup');
-    if (popup.style.display === 'flex') {
-        popup.style.display = 'none';
-    } else {
-        popup.style.display = 'flex';
+        actions.appendChild(deleteButton);
+        item.append(text, date, actions);
+        list.appendChild(item);
+      });
     }
-}
 
-const search = document.getElementById('search');
-const cards = document.querySelectorAll('.prayer-card');
+    $("notesForm").addEventListener("submit", (event) => {
+      event.preventDefault();
 
-search.addEventListener('input', () => {
-    const value = search.value.toLowerCase();
+      const input = $("noteInput");
+      const text = input.value.trim();
 
-    cards.forEach(card => {
-        const name = card.dataset.name.toLowerCase();
+      if (!text) return;
 
-        if(name.includes(value)){
-            card.style.display='block';
-        } else {
-            card.style.display='none';
+      notes.unshift({
+        text,
+        time: new Date().toLocaleString()
+      });
+
+      input.value = "";
+      saveNotes();
+      renderNotes();
+    });
+
+    $("browseButton").addEventListener("click", () => {
+      $("prayersGrid").scrollIntoView({ behavior: "smooth" });
+    });
+
+    $("newsButton").addEventListener("click", () => {
+      $("newsModal").classList.add("open");
+    });
+
+    $("closeNewsModal").addEventListener("click", () => {
+      $("newsModal").classList.remove("open");
+    });
+
+    document.querySelectorAll(".prayer-button").forEach((button) => {
+      button.addEventListener("click", () => {
+        $("prayerFrame").src = button.dataset.url;
+        $("prayerModal").classList.add("open");
+      });
+    });
+
+    $("closePrayerModal").addEventListener("click", () => {
+      $("prayerFrame").src = "";
+      $("prayerModal").classList.remove("open");
+    });
+
+    document.querySelectorAll(".modal").forEach((modal) => {
+      modal.addEventListener("click", (event) => {
+        if (event.target === modal) {
+          modal.classList.remove("open");
+
+          if (modal.id === "prayerModal") {
+            $("prayerFrame").src = "";
+          }
         }
+      });
     });
-});
-</script>
 
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-app.js";
-  import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-analytics.js";
-  import { 
-      getFirestore, 
-      collection, 
-      getDocs, 
-      addDoc, 
-      deleteDoc, 
+    $("searchInput").addEventListener("input", (event) => {
+      const query = event.target.value.toLowerCase().trim();
+
+      document.querySelectorAll("#prayersGrid .card").forEach((card) => {
+        card.classList.toggle(
+          "hidden",
+          query !== "" && !card.dataset.search.includes(query)
+        );
+      });
+    });
+
+    $("chatButton").addEventListener("click", () => {
+      $("chatPopup").classList.toggle("open");
+    });
+
+    $("closeChatButton").addEventListener("click", () => {
+      $("chatPopup").classList.remove("open");
+    });
+
+    renderNotes();
+  </script>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-app.js";
+
+    import {
+      getFirestore,
+      collection,
+      addDoc,
+      deleteDoc,
       updateDoc,
-      doc, 
+      doc,
       query,
       where,
-      onSnapshot
-  } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js";
-  import { 
-      getAuth, 
-      createUserWithEmailAndPassword, 
-      signInWithEmailAndPassword, 
-      updateProfile, 
-      signOut, 
+      onSnapshot,
+      serverTimestamp
+    } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js";
+
+    import {
+      getAuth,
+      createUserWithEmailAndPassword,
+      signInWithEmailAndPassword,
+      updateProfile,
+      signOut,
       onAuthStateChanged,
       sendPasswordResetEmail
-  } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-auth.js";
+    } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-auth.js";
 
-  // YOUR UNIQUE FIREBASE ACCOUNT USER ID
-  const FOUNDER_UID = "Sq3H6zWCUHZuvOd4Hw41HQsjTCk2";
-    
-  const firebaseConfig = {
-    apiKey: "AIzaSyDwnxuI_EbCB2vTT2CzOhOwumuoqdZ5huM",
-    authDomain: "gmw-1-9.firebaseapp.com",
-    projectId: "gmw-1-9",
-    storageBucket: "gmw-1-9.firebasestorage.app",
-    messagingSenderId: "994319050351",
-    appId: "1:994319050351:web:fc8b07dcd89bdc8b034f9a",
-    measurementId: "G-ZJFD1GVXS6"
-  };
+    const FOUNDER_UID = "Sq3H6zWCUHZuvOd4Hw41HQsjTCk2";
 
-  const app = initializeApp(firebaseConfig);
-  const analytics = getAnalytics(app);
-  const db = getFirestore(app);
-  const auth = getAuth(app);
+    const firebaseConfig = {
+      apiKey: "AIzaSyDwnxuI_EbCB2vTT2CzOhOwumuoqdZ5huM",
+      authDomain: "gmw-1-9.firebaseapp.com",
+      projectId: "gmw-1-9",
+      storageBucket: "gmw-1-9.firebasestorage.app",
+      messagingSenderId: "994319050351",
+      appId: "1:994319050351:web:fc8b07dcd89bdc8b034f9a",
+      measurementId: "G-ZJFD1GVXS6"
+    };
 
-  const prayerForm = document.getElementById('prayerForm');
-  const prayerList = document.getElementById('prayerList');
-  const statusMsg = document.getElementById('statusMsg');
-  const prayerNameInput = document.getElementById('prayerName');
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const auth = getAuth(app);
 
-  const authForm = document.getElementById('authForm');
-  const authNickname = document.getElementById('authNickname');
-  const authEmail = document.getElementById('authEmail');
-  const authPassword = document.getElementById('authPassword');
-  const authTitle = document.getElementById('authTitle');
-  const authSubmitBtn = document.getElementById('authSubmitBtn');
-  const toggleAuthLink = document.getElementById('toggleAuthLink');
-  const toggleAuthText = document.getElementById('toggleAuthText');
-  const authError = document.getElementById('authError');
-  const forgotPasswordLink = document.getElementById('forgotPasswordLink');
-  const authBtn = document.getElementById('authBtn');
-  const userInfo = document.getElementById('userInfo');
-  const userDisplayName = document.getElementById('userDisplayName');
-  const logoutBtn = document.getElementById('logoutBtn');
+    let currentUser = null;
+    let unsubscribePrayers = null;
+    let unsubscribeChat = null;
+    let signUpMode = false;
 
-  // Founder Chat Elements
-  const founderChatForm = document.getElementById('founderChatForm');
-  const chatNameInput = document.getElementById('chatName');
-  const chatTextInput = document.getElementById('chatText');
-  const chatMessages = document.getElementById('chatMessages');
-  const chatStatusMsg = document.getElementById('chatStatusMsg');
+    let userToken = localStorage.getItem("prayer_user_token");
 
-  let isSignUpMode = false;
-  let currentUser = null;
-  let unsubscribeFounderChat = null;
+    if (!userToken) {
+      userToken =
+        "user_" +
+        crypto.randomUUID();
 
-  let userToken = localStorage.getItem('prayer_user_token');
-  if (!userToken) {
-      userToken = 'user_' + Math.random().toString(36).substring(2) + Date.now().toString(36);
-      localStorage.setItem('prayer_user_token', userToken);
-  }
+      localStorage.setItem("prayer_user_token", userToken);
+    }
 
-  toggleAuthLink.addEventListener('click', (e) => {
-      e.preventDefault();
-      isSignUpMode = !isSignUpMode;
-      authError.textContent = '';
-      authError.style.color = '#ef4444';
-      
-      if (isSignUpMode) {
-          authTitle.textContent = "Sign Up";
-          authSubmitBtn.textContent = "Create Account";
-          toggleAuthText.textContent = "Already have an account?";
-          toggleAuthLink.textContent = "Sign In";
-          authNickname.style.display = 'block';
-          authNickname.required = true;
-          forgotPasswordLink.style.display = 'none';
-      } else {
-          authTitle.textContent = "Sign In";
-          authSubmitBtn.textContent = "Sign In";
-          toggleAuthText.textContent = "Don't have an account?";
-          toggleAuthLink.textContent = "Sign Up";
-          authNickname.style.display = 'none';
-          authNickname.required = false;
-          forgotPasswordLink.style.display = 'block';
+    function setStatus(element, message, color = "#00e5ff") {
+      element.textContent = message;
+      element.style.color = color;
+    }
+
+    function formatDate(value) {
+      if (!value) return "";
+
+      try {
+        const date = typeof value.toDate === "function"
+          ? value.toDate()
+          : new Date(value);
+
+        return Number.isNaN(date.getTime()) ? "" : date.toLocaleString();
+      } catch {
+        return "";
       }
-  });
+    }
 
-  forgotPasswordLink.addEventListener('click', async (e) => {
-      e.preventDefault();
-      authError.textContent = '';
-      const email = authEmail.value.trim();
-      
+    function makeButton(text, className, handler) {
+      const button = document.createElement("button");
+      button.textContent = text;
+      button.className = className;
+      button.addEventListener("click", handler);
+      return button;
+    }
+
+    function clearElement(element) {
+      element.replaceChildren();
+    }
+
+    function openAuthModal() {
+      $("authModal").classList.add("open");
+    }
+
+    function closeAuthModal() {
+      $("authModal").classList.remove("open");
+      $("authMessage").textContent = "";
+    }
+
+    $("authButton").addEventListener("click", openAuthModal);
+    $("closeAuthModal").addEventListener("click", closeAuthModal);
+
+    $("authToggleLink").addEventListener("click", (event) => {
+      event.preventDefault();
+
+      signUpMode = !signUpMode;
+      $("authMessage").textContent = "";
+
+      $("authTitle").textContent = signUpMode ? "Sign Up" : "Sign In";
+      $("authSubmit").textContent = signUpMode ? "Create Account" : "Sign In";
+      $("authToggleText").textContent = signUpMode
+        ? "Already have an account?"
+        : "Don't have an account?";
+      $("authToggleLink").textContent = signUpMode ? "Sign In" : "Sign Up";
+
+      $("authNickname").hidden = !signUpMode;
+      $("authNickname").required = signUpMode;
+      $("forgotPassword").hidden = signUpMode;
+    });
+
+    $("forgotPassword").addEventListener("click", async (event) => {
+      event.preventDefault();
+
+      const email = $("authEmail").value.trim();
+
       if (!email) {
-          authError.style.color = '#ef4444';
-          authError.textContent = "Please enter your email address above to reset your password.";
-          return;
+        setStatus($("authMessage"), "Enter your email address first.", "#ef4444");
+        return;
       }
 
       try {
-          authError.style.color = '#00e5ff';
-          authError.textContent = "Sending password reset email...";
-          await sendPasswordResetEmail(auth, email);
-          
-          authError.style.color = '#10b981';
-          authError.textContent = "Password reset email sent! Please check your inbox.";
+        setStatus($("authMessage"), "Sending password reset email...");
+        await sendPasswordResetEmail(auth, email);
+        setStatus(
+          $("authMessage"),
+          "Password reset email sent. Check your inbox.",
+          "#10b981"
+        );
       } catch (error) {
-          authError.style.color = '#ef4444';
-          authError.textContent = error.message.replace("Firebase: ", "");
+        setStatus($("authMessage"), error.message, "#ef4444");
       }
-  });
+    });
 
-  authForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      authError.style.color = '#ef4444';
-      authError.textContent = '';
-      const email = authEmail.value;
-      const password = authPassword.value;
-      const nickname = authNickname.value.trim();
+    $("authForm").addEventListener("submit", async (event) => {
+      event.preventDefault();
+
+      const email = $("authEmail").value.trim();
+      const password = $("authPassword").value;
+      const nickname = $("authNickname").value.trim();
 
       try {
-          if (isSignUpMode) {
-              const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-              if (nickname) {
-                  await updateProfile(userCredential.user, {
-                      displayName: nickname
-                  });
-              }
+        setStatus($("authMessage"), "Please wait...");
+
+        if (signUpMode) {
+          const credentials = await createUserWithEmailAndPassword(
+            auth,
+            email,
+            password
+          );
+
+          if (nickname) {
+            await updateProfile(credentials.user, {
+              displayName: nickname
+            });
+          }
+        } else {
+          await signInWithEmailAndPassword(auth, email, password);
+        }
+
+        $("authForm").reset();
+        closeAuthModal();
+      } catch (error) {
+        setStatus($("authMessage"), error.message, "#ef4444");
+      }
+    });
+
+    $("logoutButton").addEventListener("click", async () => {
+      try {
+        await signOut(auth);
+      } catch (error) {
+        alert("Unable to sign out: " + error.message);
+      }
+    });
+
+    function renderPrayer(snapshot) {
+      const prayer = snapshot.data();
+      const wrapper = document.createElement("article");
+      wrapper.className = "prayer-item";
+
+      const heading = document.createElement("h4");
+      heading.textContent = prayer.name || "Anonymous";
+
+      const text = document.createElement("p");
+      text.textContent = prayer.text || "";
+
+      const date = document.createElement("span");
+      date.className = "date";
+      date.textContent = formatDate(prayer.createdAt);
+
+      const canDelete =
+        (currentUser && prayer.ownerUid === currentUser.uid) ||
+        prayer.ownerToken === userToken;
+
+      if (canDelete) {
+        const actions = document.createElement("div");
+        actions.className = "item-actions";
+
+        const deleteButton = makeButton(
+          "Delete",
+          "delete-item",
+          async () => {
+            if (!confirm("Delete this prayer request?")) return;
+
+            try {
+              await deleteDoc(doc(db, "prayers", snapshot.id));
+            } catch (error) {
+              alert("Could not delete prayer: " + error.message);
+            }
+          }
+        );
+
+        actions.appendChild(deleteButton);
+        wrapper.appendChild(actions);
+      }
+
+      wrapper.append(heading, text, date);
+      return wrapper;
+    }
+
+    function listenToPrayers() {
+      if (unsubscribePrayers) unsubscribePrayers();
+
+      setStatus($("prayerStatus"), "Loading prayers...");
+
+      const prayersQuery = query(collection(db, "prayers"));
+
+      unsubscribePrayers = onSnapshot(
+        prayersQuery,
+        (snapshot) => {
+          clearElement($("prayerList"));
+
+          if (snapshot.empty) {
+            const empty = document.createElement("p");
+            empty.textContent = "No prayer requests yet. Be the first to post one.";
+            empty.style.color = "#94a3b8";
+            $("prayerList").appendChild(empty);
           } else {
-              await signInWithEmailAndPassword(auth, email, password);
-          }
-          authEmail.value = '';
-          authPassword.value = '';
-          authNickname.value = '';
-          closeAuthModal(); 
-      } catch (error) {
-          authError.textContent = error.message.replace("Firebase: ", "");
-      }
-  });
-
-  logoutBtn.addEventListener('click', async (e) => {
-      e.preventDefault();
-      try {
-          logoutBtn.textContent = 'Signing out...'; 
-          await signOut(auth);
-          
-          document.getElementById('authBtn').style.display = 'block';
-          document.getElementById('userInfo').style.display = 'none';
-          document.getElementById('userDisplayName').textContent = '';
-          document.getElementById('prayerName').value = '';
-          document.getElementById('chatName').value = '';
-          
-          logoutBtn.textContent = 'Sign Out'; 
-      } catch (error) {
-          console.error("Logout Error: ", error);
-          alert("Oops! Couldn't sign out: " + error.message);
-          logoutBtn.textContent = 'Sign Out';
-      }
-  });
-
-  onAuthStateChanged(auth, (user) => {
-      currentUser = user;
-      if (user) {
-          authBtn.style.display = 'none';
-          userInfo.style.display = 'flex';
-          const nameToDisplay = user.displayName || user.email;
-          userDisplayName.textContent = nameToDisplay;
-          prayerNameInput.value = user.displayName || '';
-          chatNameInput.value = user.displayName || '';
-      } else {
-          authBtn.style.display = 'block';
-          userInfo.style.display = 'none';
-          userDisplayName.textContent = '';
-          prayerNameInput.value = '';
-          chatNameInput.value = '';
-      }
-      fetchPrayers();
-      listenToFounderChat();
-  });
-
-  async function fetchPrayers() {
-      try {
-          statusMsg.textContent = "Loading prayers & Encouragement...";
-          const q = query(collection(db, "prayers"));
-          const querySnapshot = await getDocs(q);
-          
-          prayerList.innerHTML = ''; 
-          
-          querySnapshot.forEach((docSnapshot) => {
-              const prayer = docSnapshot.data();
-              const prayerId = docSnapshot.id;
-              
-              let dateStr = "";
-              if (prayer.createdAt) {
-                  const dateObj = prayer.createdAt.toDate ? prayer.createdAt.toDate() : new Date(prayer.createdAt);
-                  dateStr = dateObj.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
-              }
-              
-              const prayerItem = document.createElement('div');
-              prayerItem.className = 'prayer-item';
-              
-              let deleteBtnHTML = '';
-              if ((currentUser && prayer.ownerUid === currentUser.uid) || (prayer.ownerToken === userToken)) {
-                  deleteBtnHTML = `<button class="delete-btn" onclick="window.deletePrayer('${prayerId}')">Delete</button>`;
-              }
-
-              prayerItem.innerHTML = `
-                  ${deleteBtnHTML}
-                  <h4>${escapeHTML(prayer.name || "Anonymous")}</h4>
-                  <p>${escapeHTML(prayer.text || "")}</p>
-                  <span>${dateStr}</span>
-              `;
-              prayerList.appendChild(prayerItem);
-          });
-          statusMsg.textContent = "";
-      } catch (error) {
-          console.error("Error loading prayers: ", error);
-          statusMsg.textContent = "Error loading prayers. Check console.";
-      }
-  }
-
-  // Real-time listener for Founder Private Chat
-  function listenToFounderChat() {
-      if (unsubscribeFounderChat) unsubscribeFounderChat();
-
-      const isFounder = currentUser && currentUser.uid === FOUNDER_UID;
-
-      let q;
-      if (isFounder) {
-          q = query(collection(db, "founder_chats"));
-      } else {
-          q = query(collection(db, "founder_chats"), where("ownerToken", "==", userToken));
-      }
-
-      unsubscribeFounderChat = onSnapshot(q, (snapshot) => {
-          chatMessages.innerHTML = '';
-
-          snapshot.forEach((docSnap) => {
-              const data = docSnap.data();
-              const msgId = docSnap.id;
-
-              let dateStr = "";
-              if (data.createdAt) {
-                  const dateObj = data.createdAt.toDate ? data.createdAt.toDate() : new Date(data.createdAt);
-                  dateStr = dateObj.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) + " - " + dateObj.toLocaleDateString();
-              }
-
-              const chatItem = document.createElement('div');
-              chatItem.className = 'chat-msg-item';
-
-              const deleteBtn = `<button class="delete-btn" onclick="window.deleteChatMessage('${msgId}')">Delete</button>`;
-              const replyBtn = isFounder ? `<button class="delete-btn chat-reply-btn" onclick="window.replyToMessage('${msgId}')">Reply</button>` : '';
-
-              let replyHTML = '';
-              if (data.reply) {
-                  replyHTML = `
-                      <div style="margin-top: 8px; padding: 8px; background: #111827; border-left: 3px solid #10b981; border-radius: 6px;">
-                          <strong style="color: #10b981; font-size: 0.75rem;">Founder Reply:</strong>
-                          <p style="color: #e2e8f0; font-size: 0.8rem; margin-top: 2px;">${escapeHTML(data.reply)}</p>
-                      </div>
-                  `;
-              }
-
-              chatItem.innerHTML = `
-                  ${deleteBtn}
-                  ${replyBtn}
-                  <h5>${escapeHTML(data.name || "Anonymous")} ${isFounder ? `<span style="color:#10b981;">(To Founder)</span>` : ''}</h5>
-                  <p>${escapeHTML(data.text || "")}</p>
-                  <span>${dateStr}</span>
-                  ${replyHTML}
-              `;
-              chatMessages.appendChild(chatItem);
-          });
-
-          if (chatMessages.children.length === 0) {
-              chatMessages.innerHTML = `<p style="color: #94a3b8; font-size: 0.8rem;">No private messages yet.</p>`;
+            snapshot.forEach((item) => {
+              $("prayerList").appendChild(renderPrayer(item));
+            });
           }
 
-          chatMessages.scrollTop = chatMessages.scrollHeight;
-      }, (error) => {
-          console.error("Error listening to chat: ", error);
-      });
-  }
-
-  prayerForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const name = prayerNameInput.value.trim();
-      const text = document.getElementById('prayerText').value.trim();
-
-      if (name && text) {
-          try {
-              statusMsg.textContent = "Posting prayer...";
-              await addDoc(collection(db, "prayers"), {
-                  name: name,
-                  text: text,
-                  createdAt: new Date().toISOString(),
-                  ownerUid: currentUser ? currentUser.uid : null,
-                  ownerToken: userToken
-              });
-              document.getElementById('prayerText').value = '';
-              statusMsg.textContent = "Prayer posted!";
-              fetchPrayers();
-          } catch (error) {
-              console.error("Error adding prayer: ", error);
-              statusMsg.textContent = "Error posting prayer.";
-          }
-      }
-  });
-
-  founderChatForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const name = chatNameInput.value.trim();
-      const text = chatTextInput.value.trim();
-
-      if (name && text) {
-          try {
-              chatStatusMsg.textContent = "Sending message...";
-              await addDoc(collection(db, "founder_chats"), {
-                  name: name,
-                  text: text,
-                  createdAt: new Date().toISOString(),
-                  ownerUid: currentUser ? currentUser.uid : null,
-                  ownerToken: userToken
-              });
-              chatTextInput.value = '';
-              chatStatusMsg.textContent = "Message sent!";
-              setTimeout(() => { chatStatusMsg.textContent = ''; }, 3000);
-          } catch (error) {
-              console.error("Error sending message: ", error);
-              chatStatusMsg.textContent = "Failed to send.";
-          }
-      }
-  });
-
-  window.replyToMessage = async function(id) {
-      const replyText = prompt("Type your reply to this user:");
-      if (replyText && replyText.trim() !== '') {
-          try {
-              await updateDoc(doc(db, "founder_chats", id), {
-                  reply: replyText.trim(),
-                  repliedAt: new Date().toISOString()
-              });
-              alert("Reply sent!");
-          } catch (error) {
-              console.error("Error sending reply: ", error);
-              alert("Failed to send reply.");
-          }
-      }
-  };
-
-  window.deletePrayer = async function(id) {
-      if (confirm("Are you sure you want to delete this prayer?")) {
-          try {
-              await deleteDoc(doc(db, "prayers", id));
-              fetchPrayers();
-          } catch (error) {
-              console.error("Error deleting prayer: ", error);
-              alert("Could not delete prayer.");
-          }
-      }
-  };
-
-  window.deleteChatMessage = async function(id) {
-      if (confirm("Are you sure you want to delete this message?")) {
-          try {
-              await deleteDoc(doc(db, "founder_chats", id));
-          } catch (error) {
-              console.error("Error deleting message: ", error);
-              alert("Could not delete message.");
-          }
-      }
-  };
-
-  function escapeHTML(str) {
-      return str.replace(/[&<>'"]/g, 
-          tag => ({
-              '&': '&amp;',
-              '<': '&lt;',
-              '>': '&gt;',
-              "'": '&#39;',
-              '"': '&quot;'
-          }[tag] || tag)
+          setStatus($("prayerStatus"), "");
+        },
+        (error) => {
+          console.error(error);
+          setStatus(
+            $("prayerStatus"),
+            "Unable to load prayers. Check your Firebase rules.",
+            "#ef4444"
+          );
+        }
       );
-  }
-</script>
+    }
 
+    $("prayerForm").addEventListener("submit", async (event) => {
+      event.preventDefault();
+
+      const name = $("prayerName").value.trim();
+      const text = $("prayerText").value.trim();
+
+      if (!name || !text) return;
+
+      try {
+        setStatus($("prayerStatus"), "Posting prayer...");
+
+        await addDoc(collection(db, "prayers"), {
+          name,
+          text,
+          createdAt: serverTimestamp(),
+          ownerUid: currentUser ? currentUser.uid : null,
+          ownerToken: userToken
+        });
+
+        $("prayerText").value = "";
+        setStatus($("prayerStatus"), "Prayer posted!", "#10b981");
+
+        setTimeout(() => {
+          $("prayerStatus").textContent = "";
+        }, 3000);
+      } catch (error) {
+        console.error(error);
+        setStatus($("prayerStatus"), "Unable to post prayer.", "#ef4444");
+      }
+    });
+
+    function renderChatMessage(snapshot, isFounder) {
+      const message = snapshot.data();
+      const wrapper = document.createElement("article");
+      wrapper.className = "chat-item";
+
+      const heading = document.createElement("h5");
+      heading.textContent =
+        (message.name || "Anonymous") +
+        (isFounder ? " — To Founder" : "");
+
+      const text = document.createElement("p");
+      text.textContent = message.text || "";
+
+      const date = document.createElement("span");
+      date.className = "date";
+      date.textContent = formatDate(message.createdAt);
+
+      const actions = document.createElement("div");
+      actions.className = "item-actions";
+
+      const isOwner =
+        isFounder ||
+        message.ownerUid === (currentUser && currentUser.uid) ||
+        message.ownerToken === userToken;
+
+      if (isOwner) {
+        actions.appendChild(
+          makeButton("Delete", "delete-item", async () => {
+            if (!confirm("Delete this message?")) return;
+
+            try {
+              await deleteDoc(doc(db, "founder_chats", snapshot.id));
+            } catch (error) {
+              alert("Could not delete message: " + error.message);
+            }
+          })
+        );
+      }
+
+      if (isFounder) {
+        actions.appendChild(
+          makeButton("Reply", "reply-item", async () => {
+            const reply = prompt("Type your reply:");
+
+            if (!reply || !reply.trim()) return;
+
+            try {
+              await updateDoc(doc(db, "founder_chats", snapshot.id), {
+                reply: reply.trim(),
+                repliedAt: serverTimestamp()
+              });
+            } catch (error) {
+              alert("Could not send reply: " + error.message);
+            }
+          })
+        );
+      }
+
+      if (actions.children.length > 0) {
+        wrapper.appendChild(actions);
+      }
+
+      wrapper.append(heading, text, date);
+
+      if (message.reply) {
+        const reply = document.createElement("p");
+        reply.style.marginTop = "10px";
+        reply.style.padding = "8px";
+        reply.style.borderLeft = "3px solid #10b981";
+        reply.style.color = "#10b981";
+        reply.textContent = "Founder Reply: " + message.reply;
+        wrapper.appendChild(reply);
+      }
+
+      return wrapper;
+    }
+
+    function listenToChat() {
+      if (unsubscribeChat) unsubscribeChat();
+
+      const isFounder =
+        currentUser && currentUser.uid === FOUNDER_UID;
+
+      const chatQuery = isFounder
+        ? query(collection(db, "founder_chats"))
+        : query(
+            collection(db, "founder_chats"),
+            where("ownerToken", "==", userToken)
+          );
+
+      unsubscribeChat = onSnapshot(
+        chatQuery,
+        (snapshot) => {
+          clearElement($("chatList"));
+
+          if (snapshot.empty) {
+            const empty = document.createElement("p");
+            empty.textContent = "No private messages yet.";
+            empty.style.color = "#94a3b8";
+            $("chatList").appendChild(empty);
+          } else {
+            snapshot.forEach((item) => {
+              $("chatList").appendChild(
+                renderChatMessage(item, Boolean(isFounder))
+              );
+            });
+          }
+        },
+        (error) => {
+          console.error("Chat error:", error);
+          setStatus(
+            $("chatStatus"),
+            "Unable to load private messages.",
+            "#ef4444"
+          );
+        }
+      );
+    }
+
+    $("chatForm").addEventListener("submit", async (event) => {
+      event.preventDefault();
+
+      const name = $("chatName").value.trim();
+      const text = $("chatText").value.trim();
+
+      if (!name || !text) return;
+
+      try {
+        setStatus($("chatStatus"), "Sending message...");
+
+        await addDoc(collection(db, "founder_chats"), {
+          name,
+          text,
+          createdAt: serverTimestamp(),
+          ownerUid: currentUser ? currentUser.uid : null,
+          ownerToken: userToken
+        });
+
+        $("chatText").value = "";
+        setStatus($("chatStatus"), "Message sent!", "#10b981");
+
+        setTimeout(() => {
+          $("chatStatus").textContent = "";
+        }, 3000);
+      } catch (error) {
+        console.error(error);
+        setStatus($("chatStatus"), "Unable to send message.", "#ef4444");
+      }
+    });
+
+    onAuthStateChanged(auth, (user) => {
+      currentUser = user;
+
+      if (user) {
+        $("authButton").hidden = true;
+        $("userArea").hidden = false;
+
+        const displayName = user.displayName || user.email;
+        $("userName").textContent = displayName;
+        $("prayerName").value = user.displayName || "";
+        $("chatName").value = user.displayName || "";
+      } else {
+        $("authButton").hidden = false;
+        $("userArea").hidden = true;
+
+        $("userName").textContent = "";
+        $("prayerName").value = "";
+        $("chatName").value = "";
+      }
+
+      listenToPrayers();
+      listenToChat();
+    });
+  </script>
 </body>
 </html>
