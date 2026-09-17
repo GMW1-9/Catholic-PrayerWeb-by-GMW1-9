@@ -23,8 +23,114 @@
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
           navigator.serviceWorker.register('sw.js');
+            
         });
       }
+       
+  const NOTES_STORAGE_KEY = "gmw19_notes";
+  let notes = JSON.parse(localStorage.getItem(NOTES_STORAGE_KEY) || "[]");
+
+  const notesBubble = document.getElementById("notes-widget-bubble");
+  const notesPanel = document.getElementById("notes-widget-panel");
+  const noteInput = document.getElementById("noteInput");
+  const addNoteButton = document.querySelector("#notes-widget-panel .input-area button");
+  const closeNotesButton = document.querySelector(".close-panel-btn");
+  const notesList = document.getElementById("notesList");
+
+  function toggleNotesPanel() {
+    const isOpen = notesPanel.style.display === "flex";
+
+    notesPanel.style.display = isOpen ? "none" : "flex";
+
+    if (!isOpen && !window.matchMedia("(max-width: 480px)").matches) {
+      noteInput.focus();
+    }
+  }
+
+  function saveNotes() {
+    localStorage.setItem(NOTES_STORAGE_KEY, JSON.stringify(notes));
+  }
+
+  function renderNotes() {
+    notesList.innerHTML = "";
+
+    notes.forEach((note, index) => {
+      const noteText = typeof note === "object" ? note.text : note;
+      const noteTime = typeof note === "object" ? note.time : "";
+
+      const noteElement = document.createElement("div");
+      noteElement.className = "note";
+
+      const contentElement = document.createElement("div");
+      contentElement.className = "note-content";
+
+      const textElement = document.createElement("div");
+      textElement.className = "note-text";
+      textElement.textContent = noteText;
+
+      contentElement.appendChild(textElement);
+
+      if (noteTime) {
+        const timeElement = document.createElement("div");
+        timeElement.className = "note-time";
+        timeElement.textContent = noteTime;
+        contentElement.appendChild(timeElement);
+      }
+
+      const deleteButton = document.createElement("button");
+      deleteButton.className = "delete";
+      deleteButton.type = "button";
+      deleteButton.textContent = "X";
+      deleteButton.addEventListener("click", () => {
+        notes.splice(index, 1);
+        saveNotes();
+        renderNotes();
+      });
+
+      noteElement.appendChild(contentElement);
+      noteElement.appendChild(deleteButton);
+      notesList.appendChild(noteElement);
+    });
+  }
+
+  function addNote() {
+    const text = noteInput.value.trim();
+
+    if (!text) {
+      noteInput.focus();
+      return;
+    }
+
+    notes.push({
+      text,
+      time: new Date().toLocaleString([], {
+        year: "numeric",
+        month: "numeric",
+        day: "numeric",
+        hour: "2-digit",
+        minute: "2-digit"
+      })
+    });
+
+    noteInput.value = "";
+    saveNotes();
+    renderNotes();
+    noteInput.focus();
+  }
+
+  notesBubble.addEventListener("click", toggleNotesPanel);
+  closeNotesButton.addEventListener("click", toggleNotesPanel);
+  addNoteButton.addEventListener("click", addNote);
+
+  noteInput.addEventListener("keydown", (event) => {
+    if (event.key === "Enter") {
+      event.preventDefault();
+      addNote();
+    }
+  });
+
+  renderNotes();
+
     </script>
 
     <style>
