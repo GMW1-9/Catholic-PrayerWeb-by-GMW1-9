@@ -715,7 +715,7 @@
   </section>
 
   <!-- Locate your button near the bottom of your body layout -->
-    <button id="notifyBtn">Enable Notifications</button>
+    <button id="notifyBtn">Prayer requests/Encouragement Notifications</button>
   
   <div id="notes-widget-bubble" title="Open Notes" role="button" tabindex="0">🗒</div>
 
@@ -835,6 +835,13 @@
       <h2>What's New</h2>
 
        <div class="news-item">
+        <h4>Notes 🗒</h4>
+        <h5>OUT NOW!</h5>
+        <span>September 2026</span>
+        <p>Need to take a note here it is!</p>
+      </div>
+
+       <div class="news-item">
         <h4>Glory be</h4>
         <h5>OUT NOW!</h5>
         <span>September 2026</span>
@@ -949,7 +956,7 @@ const button = document.getElementById('notifyBtn');
           if (permission === "granted") {
             // 3. Create the notification
             const notification = new Notification("Notifications Enabled!", {
-              body: "You will now receive updates from our website.",
+              body: "You will now receive updates from Catholic PrayerWeb.",
               icon: "cpw.png" 
             });
 
