@@ -1,12 +1,13 @@
 /*
- * Foreground notification helper for Catholic PrayerWeb.
+ * Foreground notifications and per-account What's New badge.
  *
- * Add this immediately before </body> in index.html:
+ * Load this file immediately before </body> in index.html:
  * <script type="module" src="notifications.js"></script>
  *
- * This notifies visitors whose page is open. Notifications while the page is
- * closed require Firebase Cloud Messaging plus a server/Cloud Function that
- * sends messages to saved FCM tokens.
+ * The badge is tied to the signed-in Firebase account, not just the browser.
+ * The first time an account visits, current news is treated as already read.
+ * Later additions to #newsModal .news-item appear as unread for that account
+ * until that account opens What's New.
  */
 
 import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-app.js";
@@ -15,6 +16,10 @@ import {
   collection,
   onSnapshot
 } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js";
+import {
+  getAuth,
+  onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/12.17.1/firebase-auth.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyDwnxuI_EbCB2vTT2CzOhOwumuoqdZ5huM",
@@ -27,23 +32,22 @@ const firebaseConfig = {
 
 const app = getApps()[0] || initializeApp(firebaseConfig);
 const db = getFirestore(app);
+const auth = getAuth(app);
 const siteUrl = "https://gmw1-9.github.io/Catholic-PrayerWeb-by-GMW1-9/";
 const seen = new Set();
 let ready = false;
 
 function notify(title, body) {
-  if (Notification.permission !== "granted") return;
+  if (!("Notification" in window) || Notification.permission !== "granted") return;
 
-  const registration = navigator.serviceWorker?.controller
-    ? navigator.serviceWorker.ready
-    : null;
+  const show = (registration) => registration.showNotification(title, {
+    body,
+    icon: "cpw.png",
+    data: { url: siteUrl }
+  });
 
-  if (registration) {
-    registration.then((reg) => reg.showNotification(title, {
-      body,
-      icon: "cpw.png",
-      data: { url: siteUrl }
-    }));
+  if (navigator.serviceWorker?.controller) {
+    navigator.serviceWorker.ready.then(show);
   } else {
     const notification = new Notification(title, { body, icon: "cpw.png" });
     notification.onclick = () => window.open(siteUrl, "_blank");
@@ -54,8 +58,9 @@ function watchCollection(collectionName, title, getBody) {
   onSnapshot(collection(db, collectionName), (snapshot) => {
     snapshot.docChanges().forEach((change) => {
       if (change.type !== "added") return;
-      if (seen.has(`${collectionName}:${change.doc.id}`)) return;
-      seen.add(`${collectionName}:${change.doc.id}`);
+      const key = `${collectionName}:${change.doc.id}`;
+      if (seen.has(key)) return;
+      seen.add(key);
       if (ready) notify(title, getBody(change.doc.data()));
     });
   }, (error) => console.error(`Notification listener error (${collectionName}):`, error));
@@ -69,13 +74,13 @@ watchCollection("websiteUpdates", "Catholic PrayerWeb Update", (data) =>
   data.message || data.title || "Catholic PrayerWeb has a new update."
 );
 
-// Ignore existing records loaded when the listener first starts.
 setTimeout(() => { ready = true; }, 1500);
 
-// Shows the number of news items added since this visitor last opened What's New.
 (function setupNewsBadge() {
-  const NEWS_READ_KEY = "catholicPrayerWebNewsReadCount";
+  const STORAGE_PREFIX = "catholicPrayerWebNewsReadCount:";
   const NEWS_BUTTON_TEXT = "WHAT'S NEW";
+  let signedInUser = null;
+  let initializedForUser = false;
 
   function getNewsButton() {
     return [...document.querySelectorAll("button")].find((button) =>
@@ -83,13 +88,17 @@ setTimeout(() => { ready = true; }, 1500);
     );
   }
 
+  function getNewsCount() {
+    return document.querySelectorAll("#newsModal .news-item").length;
+  }
+
+  function getStorageKey() {
+    return signedInUser ? `${STORAGE_PREFIX}${signedInUser.uid}` : null;
+  }
+
   function updateNewsBadge() {
     const button = getNewsButton();
-    const newsItems = document.querySelectorAll("#newsModal .news-item");
-    if (!button || !newsItems.length) return;
-
-    let readCount = Number.parseInt(localStorage.getItem(NEWS_READ_KEY) || "0", 10);
-    if (!Number.isFinite(readCount) || readCount > newsItems.length) readCount = 0;
+    if (!button) return;
 
     let badge = button.querySelector(".news-update-badge");
     if (!badge) {
@@ -99,14 +108,42 @@ setTimeout(() => { ready = true; }, 1500);
       button.appendChild(badge);
     }
 
-    const unreadCount = Math.max(newsItems.length - readCount, 0);
+    // The badge is deliberately hidden for visitors who are not signed in.
+    if (!signedInUser || !initializedForUser) {
+      badge.hidden = true;
+      return;
+    }
+
+    const newsCount = getNewsCount();
+    const readCount = Number.parseInt(localStorage.getItem(getStorageKey()) || "0", 10);
+    const unreadCount = Math.max(newsCount - (Number.isFinite(readCount) ? readCount : newsCount), 0);
+
     badge.textContent = unreadCount > 99 ? "99+" : String(unreadCount);
     badge.hidden = unreadCount === 0;
   }
 
+  function initializeAccountState() {
+    if (!signedInUser) {
+      initializedForUser = false;
+      updateNewsBadge();
+      return;
+    }
+
+    const key = getStorageKey();
+    const newsCount = getNewsCount();
+
+    // Do not show all old news as new for a first-time account.
+    if (localStorage.getItem(key) === null) {
+      localStorage.setItem(key, String(newsCount));
+    }
+
+    initializedForUser = true;
+    updateNewsBadge();
+  }
+
   function markNewsAsRead() {
-    const newsItems = document.querySelectorAll("#newsModal .news-item");
-    localStorage.setItem(NEWS_READ_KEY, String(newsItems.length));
+    if (!signedInUser) return;
+    localStorage.setItem(getStorageKey(), String(getNewsCount()));
     updateNewsBadge();
   }
 
@@ -140,7 +177,6 @@ setTimeout(() => { ready = true; }, 1500);
     document.head.appendChild(style);
 
     button.addEventListener("click", markNewsAsRead);
-    updateNewsBadge();
 
     const newsModal = document.getElementById("newsModal");
     if (newsModal) {
@@ -149,6 +185,13 @@ setTimeout(() => { ready = true; }, 1500);
         subtree: true
       });
     }
+
+    onAuthStateChanged(auth, (user) => {
+      signedInUser = user;
+      initializeAccountState();
+    });
+
+    updateNewsBadge();
   }
 
   if (document.readyState === "loading") {
