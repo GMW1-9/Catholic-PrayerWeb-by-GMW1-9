@@ -1,16 +1,12 @@
-/*
- * Foreground notifications, FCM token registration, and per-account What's New badge.
- *
- * The FCM token is saved to Firestore so the Firebase backend can send notifications
- * even when this page is closed. A service worker cannot keep a Firestore listener
- * alive by itself; the backend trigger in functions/index.js sends the push message.
+/* Email subscriptions and the per-account What's New badge.
+ * Notifications are sent by the Firebase backend through the configured email
+ * provider. This file intentionally does not request browser notification
+ * permission, create desktop notifications, or register FCM tokens.
  */
 
 import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-app.js";
 import {
   getFirestore,
-  collection,
-  onSnapshot,
   doc,
   setDoc,
   serverTimestamp
@@ -19,10 +15,6 @@ import {
   getAuth,
   onAuthStateChanged
 } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-auth.js";
-import {
-  getMessaging,
-  getToken
-} from "https://www.gstatic.com/firebasejs/12.17.1/firebase-messaging.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyDwnxuI_EbCB2vTT2CzOhOwumuoqdZ5huM",
@@ -36,77 +28,53 @@ const firebaseConfig = {
 const app = getApps()[0] || initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const auth = getAuth(app);
-const messaging = getMessaging(app);
-const siteUrl = "https://gmw1-9.github.io/Catholic-PrayerWeb-by-GMW1-9/";
-const seen = new Set();
-let ready = false;
 let signedInUser = null;
 
-function tokenDocumentId(token) {
-  return btoa(token).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/g, "");
+function emailDocumentId(email) {
+  return btoa(unescape(encodeURIComponent(email))).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/g, "");
 }
 
-// Called by the notification button. FCM delivers messages through sw.js when
-// the tab is closed, minimized, or the installed PWA is not running.
-async function enableBackgroundNotifications() {
-  if (!("Notification" in window) || !("serviceWorker" in navigator)) {
-    throw new Error("This browser does not support background notifications.");
-  }
+function replaceNotificationButton() {
+  const oldButton = document.getElementById("notifyBtn");
+  if (!oldButton || oldButton.dataset.emailSubscriptionReady) return;
 
-  const permission = Notification.permission === "granted"
-    ? "granted"
-    : await Notification.requestPermission();
-  if (permission !== "granted") throw new Error("Notification permission was not granted.");
+  // Replace the old browser-notification button so its inline desktop
+  // Notification handler cannot be triggered anymore.
+  const container = document.createElement("div");
+  container.id = "emailNotificationSubscription";
+  container.style.cssText = "display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:16px 0;";
+  container.innerHTML = `
+    <label for="notificationEmail" style="color:white;">Email updates:</label>
+    <input id="notificationEmail" type="email" autocomplete="email" placeholder="you@example.com" aria-label="Email address for updates" required
+      style="padding:10px;border-radius:8px;border:1px solid #374151;min-width:220px;">
+    <button id="subscribeEmailBtn" type="button" style="padding:10px 14px;border:0;border-radius:8px;background:#00e5ff;color:#111827;font-weight:bold;cursor:pointer;">Subscribe</button>
+    <span id="emailSubscriptionStatus" role="status" style="color:#cbd5e1;"></span>`;
+  oldButton.replaceWith(container);
 
-  const registration = await navigator.serviceWorker.ready;
-  const token = await getToken(messaging, { serviceWorkerRegistration: registration });
-  if (!token) throw new Error("Firebase did not return a messaging token.");
-
-  await setDoc(doc(db, "notificationTokens", tokenDocumentId(token)), {
-    token,
-    uid: signedInUser?.uid || null,
-    platform: navigator.userAgent,
-    updatedAt: serverTimestamp()
-  }, { merge: true });
-
-  return token;
-}
-
-window.enableBackgroundNotifications = enableBackgroundNotifications;
-
-function notify(title, body) {
-  if (!("Notification" in window) || Notification.permission !== "granted") return;
-
-  navigator.serviceWorker.ready.then((registration) => registration.showNotification(title, {
-    body,
-    icon: "cpw.png",
-    data: { url: siteUrl }
-  })).catch(() => {
-    const notification = new Notification(title, { body, icon: "cpw.png" });
-    notification.onclick = () => window.open(siteUrl, "_blank");
+  container.querySelector("#subscribeEmailBtn").addEventListener("click", async () => {
+    const input = container.querySelector("#notificationEmail");
+    const status = container.querySelector("#emailSubscriptionStatus");
+    const email = input.value.trim().toLowerCase();
+    if (!input.checkValidity() || !email) {
+      status.textContent = "Please enter a valid email address.";
+      return;
+    }
+    status.textContent = "Saving…";
+    try {
+      await setDoc(doc(db, "emailSubscribers", emailDocumentId(email)), {
+        email,
+        uid: signedInUser?.uid || null,
+        active: true,
+        updatedAt: serverTimestamp()
+      }, { merge: true });
+      status.textContent = "Subscribed! Updates will be emailed to you.";
+      input.value = "";
+    } catch (error) {
+      console.error("Email subscription failed:", error);
+      status.textContent = "Could not subscribe. Please try again.";
+    }
   });
 }
-
-function watchCollection(collectionName, title, getBody) {
-  onSnapshot(collection(db, collectionName), (snapshot) => {
-    snapshot.docChanges().forEach((change) => {
-      if (change.type !== "added") return;
-      const key = `${collectionName}:${change.doc.id}`;
-      if (seen.has(key)) return;
-      seen.add(key);
-      if (ready) notify(title, getBody(change.doc.data()));
-    });
-  }, (error) => console.error(`Notification listener error (${collectionName}):`, error));
-}
-
-watchCollection("prayers", "New Prayer Request", (data) =>
-  `${data.name || "Someone"} shared a new prayer request or encouragement.`
-);
-watchCollection("websiteUpdates", "Catholic PrayerWeb Update", (data) =>
-  data.message || data.title || "Catholic PrayerWeb has a new update."
-);
-
-setTimeout(() => { ready = true; }, 1500);
 
 (function setupNewsBadge() {
   const STORAGE_PREFIX = "catholicPrayerWebNewsReadCount:";
@@ -114,9 +82,7 @@ setTimeout(() => { ready = true; }, 1500);
   let initializedForUser = false;
 
   function getNewsButton() {
-    return [...document.querySelectorAll("button")].find((button) =>
-      button.textContent.trim().toUpperCase() === NEWS_BUTTON_TEXT
-    );
+    return [...document.querySelectorAll("button")].find((button) => button.textContent.trim().toUpperCase() === NEWS_BUTTON_TEXT);
   }
   function getNewsCount() { return document.querySelectorAll("#newsModal .news-item").length; }
   function getStorageKey() { return signedInUser ? `${STORAGE_PREFIX}${signedInUser.uid}` : null; }
@@ -136,14 +102,8 @@ setTimeout(() => { ready = true; }, 1500);
     badge.textContent = unreadCount > 99 ? "99+" : String(unreadCount);
     badge.hidden = unreadCount === 0;
   }
-  function initializeAccountState() {
-    if (!signedInUser) { initializedForUser = false; updateNewsBadge(); return; }
-    const key = getStorageKey();
-    if (localStorage.getItem(key) === null) localStorage.setItem(key, String(getNewsCount()));
-    initializedForUser = true;
-    updateNewsBadge();
-  }
   function initialize() {
+    replaceNotificationButton();
     const button = getNewsButton();
     if (!button) return;
     const style = document.createElement("style");
@@ -153,18 +113,13 @@ setTimeout(() => { ready = true; }, 1500);
       if (signedInUser) localStorage.setItem(getStorageKey(), String(getNewsCount()));
       updateNewsBadge();
     });
-    const newsModal = document.getElementById("newsModal");
-    if (newsModal) new MutationObserver(updateNewsBadge).observe(newsModal, { childList: true, subtree: true });
-    onAuthStateChanged(auth, (user) => { signedInUser = user; initializeAccountState(); });
+    onAuthStateChanged(auth, (user) => {
+      signedInUser = user;
+      initializedForUser = Boolean(user);
+      updateNewsBadge();
+    });
     updateNewsBadge();
   }
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", initialize);
   else initialize();
 })();
-
-// Also wire the existing button directly, without requiring a page refresh.
-document.addEventListener("DOMContentLoaded", () => {
-  document.getElementById("notifyBtn")?.addEventListener("click", () => {
-    enableBackgroundNotifications().catch((error) => console.error("Background notifications could not be enabled:", error));
-  });
-});
