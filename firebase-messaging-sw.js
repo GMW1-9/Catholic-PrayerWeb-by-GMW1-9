@@ -50,3 +50,6 @@ messaging.onBackgroundMessage((payload) => {
     tag: "cpw-alert"
   });
 });
+const pushConfig = {
+  vapidKey: "BO5EvAR2FQyd6HTMYooZgOJC0J3HzdcNLTlSTfxXPxJqLcWsFiT-GDBA4veSCEXjJdl16aQt0Cul_JD1HixM7gM"
+};
