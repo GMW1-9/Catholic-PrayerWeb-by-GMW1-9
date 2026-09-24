@@ -19,44 +19,86 @@ const auth = getAuth(app);
 const messaging = getMessaging(app);
 let signedInUser = null;
 
-// Firebase Console > Project settings > Cloud Messaging > Web Push certificates.
 const vapidKey = "BO5EvAR2FQyd6HTMYooZgOJC0J3HzdcNLTlSTfxXPxJqLcWsFiT-GDBA4veSCEXjJdl16aQt0Cul_JD1HixM7gM";
 const siteUrl = "https://gmw1-9.github.io/Catholic-PrayerWeb-by-GMW1-9/";
+const repoRoot = "/Catholic-PrayerWeb-by-GMW1-9/";
+const serviceWorkerUrl = `${repoRoot}firebase-messaging-sw.js`;
 
 function subscriberId(email) {
-  return btoa(unescape(encodeURIComponent(email))).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/g, "");
+  return btoa(unescape(encodeURIComponent(email)))
+    .replace(/\+/g, "-")
+    .replace(/\//g, "_")
+    .replace(/=+$/g, "");
 }
 
-function serviceWorkerPath() {
-  return new URL("firebase-messaging-sw.js", document.baseURI).pathname;
+async function ensureServiceWorkerRegistration() {
+  if (!("serviceWorker" in navigator)) return null;
+
+  const registrations = await navigator.serviceWorker.getRegistrations();
+  const existing = registrations.find((reg) =>
+    reg.active?.scriptURL?.includes("firebase-messaging-sw.js") ||
+    reg.active?.scriptURL?.includes(repoRoot + "firebase-messaging-sw.js")
+  );
+
+  if (existing) return existing;
+  return navigator.serviceWorker.register(serviceWorkerUrl, { scope: repoRoot });
 }
 
 async function requestDeviceToken() {
   if (!window.isSecureContext || !("Notification" in window) || !("serviceWorker" in navigator)) {
-    throw new Error("Push notifications require HTTPS or localhost and a supported browser.");
+    throw new Error("Missing or insufficient permissions.");
   }
 
-  const permission = Notification.permission === "granted"
-    ? "granted"
-    : await Notification.requestPermission();
-  if (permission !== "granted") throw new Error("Notification permission was not granted.");
+  const permission = Notification.permission === "granted" ? "granted" : await Notification.requestPermission();
+  if (permission !== "granted") {
+    throw new Error("Missing or insufficient permissions.");
+  }
 
-  const registration = await navigator.serviceWorker.register(serviceWorkerPath(), { scope: new URL(".", document.baseURI).pathname });
+  if (!vapidKey) {
+    throw new Error("Missing or insufficient permissions.");
+  }
+
+  const registration = await ensureServiceWorkerRegistration();
+  if (!registration) {
+    throw new Error("Missing or insufficient permissions.");
+  }
+
   const token = await getToken(messaging, {
     vapidKey,
     serviceWorkerRegistration: registration
   });
-  if (!token) throw new Error("Firebase did not return a device token.");
+
+  if (!token) {
+    throw new Error("Missing or insufficient permissions.");
+  }
+
   return token;
+}
+
+function showBrowserNotification(title, body) {
+  if (!("Notification" in window) || Notification.permission !== "granted") return;
+
+  const notification = new Notification(title, {
+    body,
+    icon: "/Catholic-PrayerWeb-by-GMW1-9/cpw.png",
+    tag: "cpw-alert"
+  });
+
+  notification.onclick = (event) => {
+    event.preventDefault();
+    window.open(siteUrl, "_blank");
+  };
 }
 
 function renderSubscriptions() {
   const oldButton = document.getElementById("notifyBtn");
   if (!oldButton || document.getElementById("emailNotificationSubscription")) return;
+
   const panel = document.createElement("section");
   panel.id = "emailNotificationSubscription";
   panel.setAttribute("aria-label", "Email and device notifications");
   panel.style.cssText = "display:flex;flex-direction:column;gap:10px;margin:16px 0;padding:16px;background:#111827;color:white;border-radius:12px;max-width:620px;";
+
   panel.innerHTML = `
     <strong>Email & device alerts</strong>
     <span style="color:#cbd5e1;font-size:.9rem">Receive updates on your computer and phone.</span>
@@ -69,57 +111,133 @@ function renderSubscriptions() {
       <button id="unsubscribeEmailBtn" type="button" style="padding:10px 14px;border:1px solid #ef4444;border-radius:8px;background:transparent;color:#fff;cursor:pointer">Unsubscribe</button>
     </div>
     <span id="emailSubscriptionStatus" role="status" style="color:#cbd5e1"></span>`;
+
   oldButton.replaceWith(panel);
 
-  const email = () => panel.querySelector("#notificationEmail").value.trim().toLowerCase();
+  const emailInput = panel.querySelector("#notificationEmail");
   const status = panel.querySelector("#emailSubscriptionStatus");
-  const preferences = () => ({
-    email: email(),
-    uid: signedInUser?.uid || null,
-    active: true,
-    prayerAlerts: panel.querySelector("#prayerAlerts").checked,
-    websiteUpdates: panel.querySelector("#websiteUpdates").checked,
-    updatedAt: serverTimestamp()
-  });
+  const getEmail = () => emailInput.value.trim().toLowerCase();
+  const showError = () => {
+    status.textContent = "Please enter a valid email address.";
+  };
 
   panel.querySelector("#allowDeviceBtn").addEventListener("click", async () => {
-    if (!panel.querySelector("#notificationEmail").checkValidity()) { status.textContent = "Please enter a valid email address."; return; }
+    if (!emailInput.checkValidity() || !getEmail()) return showError();
     status.textContent = "Requesting permission…";
     try {
       const token = await requestDeviceToken();
-      await setDoc(doc(db, "emailSubscribers", subscriberId(email())), { ...preferences(), deviceNotifications: true, fcmTokens: [token], fcmToken: token }, { merge: true });
+      await setDoc(doc(db, "emailSubscribers", subscriberId(getEmail())), {
+        email: getEmail(),
+        uid: signedInUser?.uid || null,
+        active: true,
+        prayerAlerts: panel.querySelector("#prayerAlerts").checked,
+        websiteUpdates: panel.querySelector("#websiteUpdates").checked,
+        deviceNotifications: true,
+        fcmToken: token,
+        updatedAt: serverTimestamp()
+      }, { merge: true });
       status.textContent = "Computer and phone notifications enabled.";
     } catch (error) {
       console.error(error);
-      status.textContent = error.message || "Could not enable device notifications.";
+      status.textContent = error.message || "Missing or insufficient permissions.";
     }
   });
 
   panel.querySelector("#subscribeEmailBtn").addEventListener("click", async () => {
-    if (!panel.querySelector("#notificationEmail").checkValidity()) { status.textContent = "Please enter a valid email address."; return; }
+    if (!emailInput.checkValidity() || !getEmail()) return showError();
     status.textContent = "Saving…";
     try {
-      await setDoc(doc(db, "emailSubscribers", subscriberId(email())), preferences(), { merge: true });
+      await setDoc(doc(db, "emailSubscribers", subscriberId(getEmail())), {
+        email: getEmail(),
+        uid: signedInUser?.uid || null,
+        active: true,
+        prayerAlerts: panel.querySelector("#prayerAlerts").checked,
+        websiteUpdates: panel.querySelector("#websiteUpdates").checked,
+        updatedAt: serverTimestamp()
+      }, { merge: true });
       status.textContent = "Subscribed. Check your email for updates.";
-    } catch (error) { console.error(error); status.textContent = "Could not subscribe. Check Firebase permissions."; }
+    } catch (error) {
+      console.error(error);
+      status.textContent = error.message || "Missing or insufficient permissions.";
+    }
   });
 
   panel.querySelector("#unsubscribeEmailBtn").addEventListener("click", async () => {
-    if (!panel.querySelector("#notificationEmail").checkValidity()) { status.textContent = "Please enter a valid email address."; return; }
+    if (!emailInput.checkValidity() || !getEmail()) return showError();
+    status.textContent = "Removing subscription…";
     try {
-      await deleteDoc(doc(db, "emailSubscribers", subscriberId(email())));
+      await deleteDoc(doc(db, "emailSubscribers", subscriberId(getEmail())));
       status.textContent = "You have been unsubscribed.";
-    } catch (error) { console.error(error); status.textContent = "Could not unsubscribe. Please try again."; }
+    } catch (error) {
+      console.error(error);
+      status.textContent = "Could not unsubscribe. Please try again.";
+    }
   });
 }
 
 onMessage(messaging, (payload) => {
+  const title = payload?.notification?.title || "Catholic PrayerWeb";
+  const body = payload?.notification?.body || "You have a new update.";
+
   if (Notification.permission === "granted" && document.visibilityState === "visible") {
-    new Notification(payload?.notification?.title || "Catholic PrayerWeb", { body: payload?.notification?.body || "You have a new update.", icon: "cpw.png" });
+    showBrowserNotification(title, body);
   }
 });
 
-(function initialize() {
-  onAuthStateChanged(auth, (user) => { signedInUser = user; });
-  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", renderSubscriptions); else renderSubscriptions();
+(function setupNewsBadge() {
+  const prefix = "catholicPrayerWebNewsReadCount:";
+  let initialized = false;
+  const getButton = () => [...document.querySelectorAll("button")].find((b) => b.textContent.trim().toUpperCase() === "WHAT'S NEW");
+  const count = () => document.querySelectorAll("#newsModal .news-item").length;
+  const key = () => signedInUser ? `${prefix}${signedInUser.uid}` : null;
+
+  function update() {
+    const button = getButton();
+    if (!button) return;
+
+    let badge = button.querySelector(".news-update-badge");
+    if (!badge) {
+      badge = document.createElement("span");
+      badge.className = "news-update-badge";
+      badge.setAttribute("aria-label", "unread updates");
+      button.appendChild(badge);
+    }
+
+    if (!signedInUser || !initialized) {
+      badge.hidden = true;
+      return;
+    }
+
+    const read = Number.parseInt(localStorage.getItem(key()) || "0", 10);
+    const unread = Math.max(count() - (Number.isFinite(read) ? read : count()), 0);
+    badge.textContent = unread > 99 ? "99+" : String(unread);
+    badge.hidden = unread === 0;
+  }
+
+  function initialize() {
+    renderSubscriptions();
+    const button = getButton();
+    if (!button) return;
+
+    onAuthStateChanged(auth, (user) => {
+      signedInUser = user;
+      initialized = Boolean(user);
+      update();
+    });
+
+    button.addEventListener("click", () => {
+      if (signedInUser) {
+        localStorage.setItem(key(), String(count()));
+      }
+      update();
+    });
+
+    update();
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initialize);
+  } else {
+    initialize();
+  }
 })();
