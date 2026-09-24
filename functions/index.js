@@ -1,62 +1,55 @@
 const { onDocumentCreated } = require("firebase-functions/v2/firestore");
 const { initializeApp } = require("firebase-admin/app");
 const { getFirestore } = require("firebase-admin/firestore");
-const crypto = require("node:crypto");
 
 initializeApp();
 const db = getFirestore();
 const siteUrl = "https://gmw1-9.github.io/Catholic-PrayerWeb-by-GMW1-9/";
 
-function emailIsValid(email) {
+function validEmail(email) {
   return typeof email === "string" && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 }
 
 async function sendEmail(to, subject, body) {
   const apiKey = process.env.RESEND_API_KEY;
   const from = process.env.EMAIL_FROM;
-  if (!apiKey || !from) {
-    console.error("Email notifications are not configured. Set RESEND_API_KEY and EMAIL_FROM.");
-    return false;
-  }
+  if (!apiKey || !from) throw new Error("Missing RESEND_API_KEY or EMAIL_FROM configuration.");
 
   const response = await fetch("https://api.resend.com/emails", {
     method: "POST",
-    headers: {
-      Authorization: `Bearer ${apiKey}`,
-      "Content-Type": "application/json"
-    },
+    headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
     body: JSON.stringify({
       from,
       to: [to],
       subject,
-      text: `${body}\n\nVisit Catholic PrayerWeb: ${siteUrl}`
+      text: `${body}\n\nVisit Catholic PrayerWeb: ${siteUrl}\n\nTo stop these emails, use the unsubscribe option on the website.`
     })
   });
-
-  if (!response.ok) {
-    console.error("Email provider rejected a notification:", response.status, await response.text());
-    return false;
-  }
-  return true;
+  if (!response.ok) throw new Error(`Email provider returned ${response.status}: ${await response.text()}`);
 }
 
-async function sendToEmailSubscribers(subject, body) {
-  const snapshot = await db.collection("emailSubscribers").where("active", "==", true).limit(1000).get();
-  const deliveries = snapshot.docs.map(async (entry) => {
-    const email = entry.data().email;
-    if (!emailIsValid(email)) return;
+async function emailSubscribers(type, subject, body) {
+  const snapshot = await db.collection("emailSubscribers")
+    .where("active", "==", true)
+    .where(type, "==", true)
+    .limit(1000)
+    .get();
+
+  await Promise.all(snapshot.docs.map(async (subscriber) => {
+    const email = subscriber.data().email;
+    if (!validEmail(email)) return;
     try {
       await sendEmail(email, subject, body);
     } catch (error) {
-      console.error(`Could not email ${email}:`, error);
+      console.error(`Could not send ${type} email to ${email}:`, error);
     }
-  });
-  await Promise.all(deliveries);
+  }));
 }
 
 exports.notifyNewPrayer = onDocumentCreated("prayers/{prayerId}", async (event) => {
   const data = event.data?.data() || {};
-  await sendToEmailSubscribers(
+  await emailSubscribers(
+    "prayerAlerts",
     "New Prayer Request - Catholic PrayerWeb",
     `${data.name || "Someone"} shared a new prayer request or encouragement.`
   );
@@ -64,7 +57,8 @@ exports.notifyNewPrayer = onDocumentCreated("prayers/{prayerId}", async (event) 
 
 exports.notifyWebsiteUpdate = onDocumentCreated("websiteUpdates/{updateId}", async (event) => {
   const data = event.data?.data() || {};
-  await sendToEmailSubscribers(
+  await emailSubscribers(
+    "websiteUpdates",
     "Catholic PrayerWeb Update",
     data.message || data.title || "Catholic PrayerWeb has a new update."
   );
