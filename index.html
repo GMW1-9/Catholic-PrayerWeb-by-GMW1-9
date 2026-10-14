@@ -300,6 +300,18 @@
       gap: 8px;
     }
 
+    .vote-btn.active.up {
+      background: #10b981;
+      color: black;
+      border-color: #10b981;
+    }
+
+    .vote-btn.active.down {
+      background: #ef4444;
+      color: white;
+      border-color: #ef4444;
+    }
+
     .vote-count {
       color: #00e5ff;
       font-weight: bold;
@@ -1053,7 +1065,7 @@ const button = document.getElementById('notifyBtn');
       query,
       where,
       onSnapshot,
-      increment
+      runTransaction
     } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js";
     import {
       getAuth,
@@ -1139,8 +1151,6 @@ const button = document.getElementById('notifyBtn');
       }
     });
 
-    // ... auth handling (omitted here for brevity in this view) - keep existing auth code
-
     // --- Fetch / render prayers ---
     async function fetchPrayers() {
       try {
@@ -1172,15 +1182,26 @@ const button = document.getElementById('notifyBtn');
             deleteBtnHTML = `<button class="delete-btn" onclick="window.deletePrayer('${prayerId}')">Delete</button>`;
           }
 
+          // compute vote counts from votes map
+          const votes = prayer.votes || {};
+          let up = 0, down = 0;
+          for (const k in votes) {
+            if (votes[k] === 'up') up++;
+            if (votes[k] === 'down') down++;
+          }
+
+          // user's vote for styling
+          const userVote = currentUser && votes[currentUser.uid] ? votes[currentUser.uid] : null;
+
           // Only show thumbs up/down for items submitted as 'encouragement'
           let voteHTML = "";
           if (prayer.type === "encouragement") {
-            const up = prayer.upvotes || 0;
-            const down = prayer.downvotes || 0;
+            const upClass = userVote === 'up' ? 'active up' : '';
+            const downClass = userVote === 'down' ? 'active down' : '';
             voteHTML = `
               <div style="margin-top:8px; display:flex; gap:8px; align-items:center;">
-                <button class="vote-btn" onclick="window.vote('${prayerId}','up')">👍 <span class="vote-count">${up}</span></button>
-                <button class="vote-btn" onclick="window.vote('${prayerId}','down')">👎 <span class="vote-count">${down}</span></button>
+                <button class="vote-btn ${upClass}" onclick="window.vote('${prayerId}','up', event)">👍 <span class="vote-count">${up}</span></button>
+                <button class="vote-btn ${downClass}" onclick="window.vote('${prayerId}','down', event)">👎 <span class="vote-count">${down}</span></button>
               </div>
             `;
           }
@@ -1226,8 +1247,7 @@ const button = document.getElementById('notifyBtn');
             createdAt: new Date().toISOString(),
             ownerUid: currentUser ? currentUser.uid : null,
             ownerToken: userToken,
-            upvotes: 0,
-            downvotes: 0
+            votes: {}
           });
 
           document.getElementById("prayerText").value = "";
@@ -1240,15 +1260,38 @@ const button = document.getElementById('notifyBtn');
       }
     });
 
-    // --- Vote handler ---
-    window.vote = async function (id, action) {
+    // --- Vote handler (one vote per signed-in user, toggle) ---
+    window.vote = async function (id, action, event) {
+      event && event.stopPropagation && event.stopPropagation();
+      if (!currentUser) {
+        alert('Please sign in to vote.');
+        openAuthModal();
+        return;
+      }
+
+      const uid = currentUser.uid;
+      const docRef = doc(db, 'prayers', id);
+
       try {
-        if (action === 'up') {
-          await updateDoc(doc(db, 'prayers', id), { upvotes: increment(1) });
-        } else if (action === 'down') {
-          await updateDoc(doc(db, 'prayers', id), { downvotes: increment(1) });
-        }
-        // Refresh the list to show updated counts (simple approach)
+        await runTransaction(db, async (t) => {
+          const snap = await t.get(docRef);
+          if (!snap.exists()) throw new Error('Prayer not found');
+          const data = snap.data();
+          const votes = data.votes || {};
+          const prev = votes[uid];
+
+          if (prev === action) {
+            // remove existing vote
+            delete votes[uid];
+          } else {
+            // set new vote (overwrites previous if exists)
+            votes[uid] = action;
+          }
+
+          t.update(docRef, { votes });
+        });
+
+        // refresh
         fetchPrayers();
       } catch (error) {
         console.error('Error voting:', error);
@@ -1287,7 +1330,7 @@ const button = document.getElementById('notifyBtn');
       }
 
       fetchPrayers();
-      listenToFounderChat();
+      listenToFounderChat && listenToFounderChat();
     });
 
     // ... rest of existing code for chats/listeners remains unchanged (omitted here for brevity) ...
