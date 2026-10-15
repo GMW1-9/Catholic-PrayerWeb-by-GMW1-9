@@ -719,21 +719,6 @@
     <div class="search-box">
       <input type="text" id="search" placeholder="keyword..." />
     </div>
-
-    <div id="authContainer">
-      <button id="authBtn" onclick="openAuthModal()" class="outline-btn" style="padding: 8px 16px; font-size: 0.9rem;">
-        Sign In / Sign Up
-      </button>
-      <div id="userInfo" style="display: none; color: white; gap: 10px; align-items: center;">
-        <span id="userDisplayName" style="font-size: 0.85rem;"></span>
-        <button
-          id="logoutBtn"
-          style="padding: 6px 12px; font-size: 0.8rem; background: #ef4444; color: white; border: none; border-radius: 8px; cursor: pointer;"
-        >
-          Sign Out
-        </button>
-      </div>
-    </div>
   </header>
 
   <section class="hero">
@@ -817,8 +802,6 @@
       </div>
     </div>
   </section>
-
-  
 
   <h2 class="section-title">Community Prayer & Encouragement Wall</h2>
   <section class="prayer-section">
@@ -912,12 +895,6 @@
       </div>
 
       <div class="news-item">
-        <h4>Accounts Able NOW</h4>
-        <span>August 2026</span>
-        <p>sign up and get on to any device for sending your prayers the default nickname</p>
-      </div>
-
-      <div class="news-item">
         <h4>Self-Deletion Feature Added</h4>
         <span>July 2026</span>
         <p>You can now delete prayer requests that you have posted directly from your device.</p>
@@ -934,53 +911,6 @@
         <span>July 2026</span>
         <p>A prayer based on scripture and the Annunciation</p>
       </div>
-    </div>
-  </div>
-
-  <div class="modal" id="authModal">
-    <div class="news-content" style="max-width: 400px; text-align: center;">
-      <button class="close-btn" onclick="closeAuthModal()">X</button>
-      <h2 id="authTitle">Sign In</h2>
-
-      <form id="authForm" style="display: flex; flex-direction: column; gap: 15px; margin-top: 20px;">
-        <input
-          type="text"
-          id="authNickname"
-          placeholder="Nickname (for prayer posts)"
-          style="display: none; width: 100%; padding: 12px; border-radius: 12px; background: #1f2937; color: white; border: 1px solid #374151; font-family: 'Orbitron', sans-serif;"
-        />
-        <input
-          type="email"
-          id="authEmail"
-          placeholder="Email Address"
-          required
-          style="width: 100%; padding: 12px; border-radius: 12px; background: #1f2937; color: white; border: 1px solid #374151; font-family: 'Orbitron', sans-serif;"
-        />
-        <input
-          type="password"
-          id="authPassword"
-          placeholder="Password (min 6 chars)"
-          required
-          style="width: 100%; padding: 12px; border-radius: 12px; background: #1f2937; color: white; border: 1px solid #374151; font-family: 'Orbitron', sans-serif;"
-        />
-
-        <a href="#" id="forgotPasswordLink" style="font-size: 0.85rem; color: #00e5ff; text-align: right; text-decoration: underline;">Forgot Password?</a>
-
-        <p id="authError" style="color: #ef4444; font-size: 0.85rem; margin: 0;"></p>
-
-        <button
-          type="submit"
-          id="authSubmitBtn"
-          style="padding: 12px; border: none; border-radius: 12px; background: #00e5ff; color: black; font-weight: bold; cursor: pointer; font-family: 'Orbitron', sans-serif;"
-        >
-          Sign In
-        </button>
-      </form>
-
-      <p style="margin-top: 20px; font-size: 0.85rem; color: #cbd5e1;">
-        <span id="toggleAuthText">Don't have an account?</span>
-        <a href="#" id="toggleAuthLink" style="color: #00e5ff; text-decoration: underline;">Sign Up</a>
-      </p>
     </div>
   </div>
 
@@ -1005,180 +935,6 @@
           }
         });
       });
-    })();
-
-    // --- Authentication (client-only demo implementation) ---
-    (function () {
-      // Simple client-side user store (demo only!)
-      const USERS_KEY = 'cpw_users';
-      const CURRENT_KEY = 'cpw_currentUser';
-
-      // Elements
-      const authModal = document.getElementById('authModal');
-      const authForm = document.getElementById('authForm');
-      const authTitle = document.getElementById('authTitle');
-      const authNickname = document.getElementById('authNickname');
-      const authEmail = document.getElementById('authEmail');
-      const authPassword = document.getElementById('authPassword');
-      const authError = document.getElementById('authError');
-      const authSubmitBtn = document.getElementById('authSubmitBtn');
-      const toggleAuthLink = document.getElementById('toggleAuthLink');
-      const toggleAuthText = document.getElementById('toggleAuthText');
-      const authBtn = document.getElementById('authBtn');
-      const userInfo = document.getElementById('userInfo');
-      const userDisplayName = document.getElementById('userDisplayName');
-      const logoutBtn = document.getElementById('logoutBtn');
-
-      let mode = 'signin'; // or 'signup'
-
-      function loadUsers() {
-        try {
-          const raw = localStorage.getItem(USERS_KEY);
-          return raw ? JSON.parse(raw) : {};
-        } catch (e) {
-          return {};
-        }
-      }
-
-      function saveUsers(users) {
-        localStorage.setItem(USERS_KEY, JSON.stringify(users));
-      }
-
-      function setCurrentUser(user) {
-        if (user) localStorage.setItem(CURRENT_KEY, JSON.stringify(user));
-        else localStorage.removeItem(CURRENT_KEY);
-        updateAuthUI();
-      }
-
-      function getCurrentUser() {
-        try {
-          const raw = localStorage.getItem(CURRENT_KEY);
-          return raw ? JSON.parse(raw) : null;
-        } catch (e) { return null; }
-      }
-
-      function openAuthModal() {
-        authError.textContent = '';
-        authModal.style.display = 'flex';
-        // reset fields
-        authEmail.value = '';
-        authPassword.value = '';
-        if (mode === 'signup') authNickname.value = '';
-      }
-
-      function closeAuthModal() {
-        authModal.style.display = 'none';
-      }
-
-      // Expose to global (for existing inline onclicks)
-      window.openAuthModal = function () { openAuthModal(); };
-      window.closeAuthModal = function () { closeAuthModal(); };
-
-      function switchTo(modeTo) {
-        mode = modeTo;
-        if (mode === 'signup') {
-          authTitle.textContent = 'Sign Up';
-          authSubmitBtn.textContent = 'Create Account';
-          toggleAuthText.textContent = 'Already have an account?';
-          toggleAuthLink.textContent = 'Sign In';
-          authNickname.style.display = 'block';
-        } else {
-          authTitle.textContent = 'Sign In';
-          authSubmitBtn.textContent = 'Sign In';
-          toggleAuthText.textContent = "Don't have an account?";
-          toggleAuthLink.textContent = 'Sign Up';
-          authNickname.style.display = 'none';
-        }
-        authError.textContent = '';
-      }
-
-      // Toggle link
-      toggleAuthLink.addEventListener('click', function (e) {
-        e.preventDefault();
-        switchTo(mode === 'signin' ? 'signup' : 'signin');
-      });
-
-      // Submit handler
-      authForm.addEventListener('submit', function (e) {
-        e.preventDefault();
-        authError.textContent = '';
-        const email = (authEmail.value || '').trim().toLowerCase();
-        const password = (authPassword.value || '');
-        const nickname = (authNickname.value || '').trim() || 'Anonymous';
-
-        if (!email || !password) {
-          authError.textContent = 'Please provide email and password.';
-          return;
-        }
-        if (password.length < 6) {
-          authError.textContent = 'Password must be at least 6 characters.';
-          return;
-        }
-
-        const users = loadUsers();
-
-        if (mode === 'signup') {
-          if (users[email]) {
-            authError.textContent = 'An account with that email already exists.';
-            return;
-          }
-          // Create user (plain password for demo only)
-          users[email] = { email: email, password: password, nickname: nickname };
-          saveUsers(users);
-          setCurrentUser({ email: email, nickname: nickname });
-          closeAuthModal();
-          showStatus('Account created and signed in.');
-        } else {
-          const user = users[email];
-          if (!user || user.password !== password) {
-            authError.textContent = 'Invalid email or password.';
-            return;
-          }
-          setCurrentUser({ email: user.email, nickname: user.nickname || nickname });
-          closeAuthModal();
-          showStatus('Signed in successfully.');
-        }
-      });
-
-      // Logout handler
-      logoutBtn.addEventListener('click', function () {
-        // If using external auth providers, sign them out here too (firebase example)
-        if (window.firebase && firebase.auth && typeof firebase.auth().signOut === 'function') {
-          try { firebase.auth().signOut(); } catch (e) { console.warn('Firebase signOut error', e); }
-        }
-        setCurrentUser(null);
-        showStatus('Signed out successfully.');
-      });
-
-      function updateAuthUI() {
-        const current = getCurrentUser();
-        if (current) {
-          if (authBtn) authBtn.style.display = 'none';
-          if (userInfo) userInfo.style.display = 'flex';
-          if (userDisplayName) userDisplayName.textContent = current.nickname || current.email;
-        } else {
-          if (authBtn) authBtn.style.display = 'inline-block';
-          if (userInfo) userInfo.style.display = 'none';
-          if (userDisplayName) userDisplayName.textContent = '';
-        }
-      }
-
-      function showStatus(msg) {
-        const statusMsg = document.getElementById('statusMsg');
-        if (!statusMsg) return;
-        statusMsg.textContent = msg;
-        setTimeout(() => { if (statusMsg.textContent === msg) statusMsg.textContent = ''; }, 3000);
-      }
-
-      // Initialize
-      switchTo('signin');
-      updateAuthUI();
-
-      // Close modal when clicking outside modal content
-      authModal.addEventListener('click', function (e) {
-        if (e.target === authModal) closeAuthModal();
-      });
-
     })();
 
     // Placeholder functions used in the page (minimal implementations)
