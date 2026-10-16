@@ -422,7 +422,7 @@
       color: black;
     }
 
-    /* Repositioned Notes Widget to Bottom Center */
+    /* Bottom center notes bubble */
     #notes-widget-bubble {
       position: fixed;
       bottom: 20px;
@@ -449,14 +449,18 @@
       background-color: #0056b3;
     }
 
+    /* Draggable and Resizable Notes Panel */
     #notes-widget-panel {
       position: fixed;
       bottom: 90px;
       left: 50%;
       transform: translateX(-50%);
       width: 350px;
-      max-width: 90vw;
+      min-width: 260px;
+      max-width: 95vw;
       height: 450px;
+      min-height: 250px;
+      max-height: 90vh;
       background: #f4f4f4;
       border-radius: 12px;
       box-shadow: 0 5px 15px rgba(0, 0, 0, 0.25);
@@ -464,6 +468,7 @@
       display: none;
       flex-direction: column;
       overflow: hidden;
+      resize: both; /* Makes the panel resizable */
       font-family: Arial, sans-serif;
     }
 
@@ -476,6 +481,12 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
+      cursor: grab; /* Indicates header can be used to drag */
+      user-select: none;
+    }
+
+    .widget-header:active {
+      cursor: grabbing;
     }
 
     .widget-header h3 {
@@ -598,7 +609,7 @@
   <div id="notes-widget-bubble" title="Open Notes" role="button" tabindex="0">🗒</div>
 
   <div id="notes-widget-panel">
-    <div class="widget-header">
+    <div class="widget-header" id="notesWidgetHeader">
       <h3>🗒 Notes</h3>
       <button id="closeNotesButton" class="close-panel-btn" type="button" aria-label="Close notes">×</button>
     </div>
@@ -811,21 +822,72 @@
       });
     });
 
-    // Notes Widget Functionality (LocalStorage)
+    // Notes Widget Functionality (LocalStorage + Draggable)
     const bubble = document.getElementById('notes-widget-bubble');
     const panel = document.getElementById('notes-widget-panel');
+    const header = document.getElementById('notesWidgetHeader');
     const closeNotesBtn = document.getElementById('closeNotesButton');
     const noteInput = document.getElementById('noteInput');
     const addNoteBtn = document.getElementById('addNoteButton');
     const notesList = document.getElementById('notesList');
 
     bubble.addEventListener('click', () => {
-      panel.style.display = panel.style.display === 'flex' ? 'none' : 'flex';
+      if (panel.style.display === 'flex') {
+        panel.style.display = 'none';
+      } else {
+        panel.style.display = 'flex';
+        // If it hasn't been manually positioned yet, center it nicely
+        if (!panel.dataset.moved) {
+          panel.style.left = '50%';
+          panel.style.top = 'auto';
+          panel.style.bottom = '90px';
+          panel.style.transform = 'translateX(-50%)';
+        }
+      }
     });
 
     closeNotesBtn.addEventListener('click', () => {
       panel.style.display = 'none';
     });
+
+    // Make Notes Panel Draggable via Header
+    let isDragging = false;
+    let startX, startY, initialLeft, initialTop;
+
+    header.addEventListener('mousedown', (e) => {
+      if (e.target === closeNotesBtn) return;
+      isDragging = true;
+      panel.dataset.moved = "true";
+      
+      // Clear centering transform so absolute pixel placement works smoothly
+      const rect = panel.getBoundingClientRect();
+      panel.style.transform = 'none';
+      panel.style.left = rect.left + 'px';
+      panel.style.top = rect.top + 'px';
+      panel.style.bottom = 'auto';
+
+      startX = e.clientX;
+      startY = e.clientY;
+      initialLeft = rect.left;
+      initialTop = rect.top;
+
+      document.addEventListener('mousemove', onMouseMove);
+      document.addEventListener('mouseup', onMouseUp);
+    });
+
+    function onMouseMove(e) {
+      if (!isDragging) return;
+      const dx = e.clientX - startX;
+      const dy = e.clientY - startY;
+      panel.style.left = (initialLeft + dx) + 'px';
+      panel.style.top = (initialTop + dy) + 'px';
+    }
+
+    function onMouseUp() {
+      isDragging = false;
+      document.removeEventListener('mousemove', onMouseMove);
+      document.removeEventListener('mouseup', onMouseUp);
+    }
 
     function loadNotes() {
       const notes = JSON.parse(localStorage.getItem('cpw_notes') || '[]');
