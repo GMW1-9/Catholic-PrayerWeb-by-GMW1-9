@@ -310,110 +310,6 @@
       background: #dc2626;
     }
 
-    .chat-widget-btn {
-      position: fixed;
-      bottom: 25px;
-      right: 25px;
-      width: 60px;
-      height: 60px;
-      border-radius: 50%;
-      background: #00e5ff;
-      color: #111827;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      cursor: pointer;
-      box-shadow: 0 0 20px rgba(0, 229, 255, 0.6);
-      z-index: 1000;
-      transition: transform 0.3s, background-color 0.3s;
-    }
-
-    .chat-widget-btn:hover {
-      transform: scale(1.1);
-      background: #ffffff;
-    }
-
-    .chat-popup {
-      position: fixed;
-      bottom: 95px;
-      right: 25px;
-      width: 340px;
-      max-width: 90vw;
-      max-height: 520px;
-      background: #111827;
-      border: 1px solid #1f2937;
-      border-radius: 20px;
-      box-shadow: 0 0 25px rgba(0, 229, 255, 0.3);
-      display: none;
-      flex-direction: column;
-      z-index: 1000;
-      overflow: hidden;
-    }
-
-    .chat-popup-header {
-      background: #1f2937;
-      padding: 12px 16px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      border-bottom: 1px solid #374151;
-    }
-
-    .chat-popup-header h3 {
-      color: white;
-      font-size: 1rem;
-    }
-
-    .chat-popup-close {
-      background: transparent;
-      border: none;
-      color: #ef4444;
-      font-size: 1.1rem;
-      cursor: pointer;
-      font-weight: bold;
-    }
-
-    .chat-popup-body {
-      padding: 15px;
-      display: flex;
-      flex-direction: column;
-      overflow-y: auto;
-    }
-
-    .chat-messages {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      max-height: 220px;
-      overflow-y: auto;
-      margin-bottom: 15px;
-    }
-
-    .chat-msg-item {
-      background: #1f2937;
-      padding: 10px 14px;
-      border-radius: 12px;
-      border-left: 3px solid #00e5ff;
-      position: relative;
-    }
-
-    .chat-msg-item h5 {
-      color: #00e5ff;
-      font-size: 0.85rem;
-      margin-bottom: 3px;
-    }
-
-    .chat-msg-item p {
-      color: white;
-      font-size: 0.85rem;
-      margin-bottom: 3px;
-    }
-
-    .chat-msg-item span {
-      font-size: 0.68rem;
-      color: #94a3b8;
-    }
-
     footer {
       text-align: center;
       padding: 30px;
@@ -526,10 +422,12 @@
       color: black;
     }
 
+    /* Repositioned Notes Widget to Bottom Center */
     #notes-widget-bubble {
       position: fixed;
       bottom: 20px;
-      left: 20px;
+      left: 50%;
+      transform: translateX(-50%);
       width: 60px;
       height: 60px;
       background-color: #007bff;
@@ -547,15 +445,17 @@
     }
 
     #notes-widget-bubble:hover {
-      transform: scale(1.05);
+      transform: translateX(-50%) scale(1.05);
       background-color: #0056b3;
     }
 
     #notes-widget-panel {
       position: fixed;
       bottom: 90px;
-      left: 20px;
+      left: 50%;
+      transform: translateX(-50%);
       width: 350px;
+      max-width: 90vw;
       height: 450px;
       background: #f4f4f4;
       border-radius: 12px;
@@ -672,15 +572,6 @@
       margin-left: 8px;
       font-size: 12px;
     }
-
-    @media (max-width: 480px) {
-      #notes-widget-panel {
-        width: calc(100% - 40px);
-        height: 70vh;
-        left: 20px;
-        right: 20px;
-      }
-    }
   </style>
 </head>
 <body>
@@ -791,34 +682,6 @@
     </div>
   </section>
 
-  <div class="chat-widget-btn" onclick="toggleChatPopup()" id="chatWidgetBtn" title="Chat with Founder">
-    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-    </svg>
-  </div>
-
-  <div class="chat-popup" id="chatPopup">
-    <div class="chat-popup-header">
-      <h3>💬Feedback/Questions</h3>
-      <button class="chat-popup-close" onclick="toggleChatPopup()">✕</button>
-    </div>
-
-    <div class="chat-popup-body">
-      <p id="chatStatusMsg" style="color: #00e5ff; font-size: 0.8rem; margin-bottom: 8px;"></p>
-      <p style="color: #a5b4fc; font-size: 0.78rem; margin-bottom: 10px;">
-        Send a direct live message to the founder. Only the founder can read messages sent here!
-      </p>
-
-      <div class="chat-messages" id="chatMessages"></div>
-
-      <form class="prayer-form" id="founderChatForm" style="margin-bottom: 0;">
-        <input type="text" id="chatName" placeholder="Your Nickname or 'Anonymous'" required style="padding: 8px 12px; font-size: 0.85rem;" />
-        <textarea id="chatText" placeholder="Write a message..." required style="height: 60px; padding: 8px 12px; font-size: 0.85rem;"></textarea>
-        <button type="submit" style="padding: 10px; font-size: 0.85rem;">Send Message</button>
-      </form>
-    </div>
-  </div>
-
   <div class="modal" id="prayerModal">
     <div class="modal-content">
       <button class="close-btn" onclick="closePrayer()">X</button>
@@ -852,12 +715,6 @@
       </div>
 
       <div class="news-item">
-        <h4>💬Feedback/Questions Chat</h4>
-        <span>September 2026</span>
-        <p>Send a direct live message to the founder. Only the founder can read messages sent here!</p>
-      </div>
-
-      <div class="news-item">
         <h4>Our Father</h4>
         <span>August 2026</span>
         <p>The prayer Jesus taught his disciples!</p>
@@ -887,18 +744,15 @@
 
   <script>
     // ==========================================
-    // 1. FIREBASE CONFIGURATION & INITIALIZATION
+    // FIREBASE CONFIGURATION & INITIALIZATION
     // ==========================================
-    // Replace the object below with your own Firebase project configuration credentials
     const firebaseConfig = {
-      apiKey: "AIzaSyDwnxuI_EbCB2vTT2CzOhOwumuoqdZ5huM",
-  authDomain: "gmw-1-9.firebaseapp.com",
-  databaseURL: "https://gmw-1-9-default-rtdb.firebaseio.com",
-  projectId: "gmw-1-9",
-  storageBucket: "gmw-1-9.firebasestorage.app",
-  messagingSenderId: "994319050351",
-  appId: "1:994319050351:web:fc8b07dcd89bdc8b034f9a",
-  measurementId: "G-ZJFD1GVXS6"
+      apiKey: "YOUR_API_KEY",
+      authDomain: "YOUR_AUTH_DOMAIN",
+      projectId: "YOUR_PROJECT_ID",
+      storageBucket: "YOUR_STORAGE_BUCKET",
+      messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+      appId: "YOUR_APP_ID"
     };
 
     firebase.initializeApp(firebaseConfig);
@@ -1015,13 +869,12 @@
     loadNotes();
 
     // ==========================================
-    // 2. COMMUNITY PRAYER WALL WITH FIREBASE FIRESTORE
+    // COMMUNITY PRAYER WALL WITH FIREBASE FIRESTORE
     // ==========================================
     const prayerForm = document.getElementById('prayerForm');
     const prayerList = document.getElementById('prayerList');
     const statusMsg = document.getElementById('statusMsg');
 
-    // Real-time listener using Firebase Firestore
     function loadPrayersFirebase() {
       statusMsg.textContent = "Connecting to live prayer wall...";
       db.collection('prayers')
@@ -1053,7 +906,6 @@
         });
     }
 
-    // Submit a new prayer to Firestore
     prayerForm.addEventListener('submit', (e) => {
       e.preventDefault();
       const name = document.getElementById('prayerName').value.trim();
@@ -1074,7 +926,6 @@
       });
     });
 
-    // Delete a prayer from Firestore
     window.deletePrayerFirebase = function(docId) {
       if (confirm("Are you sure you want to delete this post?")) {
         db.collection('prayers').doc(docId).delete().catch((error) => {
@@ -1083,55 +934,7 @@
       }
     };
 
-    // Initialize the Firebase prayer feed on page load
     loadPrayersFirebase();
-
-    // Chat Popup & Founder Messages Logic
-    function toggleChatPopup() {
-      const popup = document.getElementById('chatPopup');
-      popup.style.display = popup.style.display === 'flex' ? 'none' : 'flex';
-    }
-
-    const founderChatForm = document.getElementById('founderChatForm');
-    const chatMessages = document.getElementById('chatMessages');
-
-    function loadChatMessages() {
-      const msgs = JSON.parse(localStorage.getItem('cpw_chats') || '[]');
-      chatMessages.innerHTML = '';
-      msgs.forEach((m, index) => {
-        const div = document.createElement('div');
-        div.className = 'chat-msg-item';
-        div.innerHTML = `
-          <h5>${escapeHtml(m.name)}</h5>
-          <p>${escapeHtml(m.text)}</p>
-          <span>${m.time}</span>
-          <button class="delete-btn" style="top:8px; right:8px; padding:2px 6px; font-size:0.62rem;" onclick="deleteChat(${index})">Delete</button>
-        `;
-        chatMessages.appendChild(div);
-      });
-    }
-
-    founderChatForm.addEventListener('submit', (e) => {
-      e.preventDefault();
-      const name = document.getElementById('chatName').value.trim();
-      const text = document.getElementById('chatText').value.trim();
-      if (!name || !text) return;
-
-      const msgs = JSON.parse(localStorage.getItem('cpw_chats') || '[]');
-      msgs.unshift({ name, text, time: new Date().toLocaleString() });
-      localStorage.setItem('cpw_chats', JSON.stringify(msgs));
-
-      document.getElementById('chatText').value = '';
-      loadChatMessages();
-    });
-
-    window.deleteChat = function(index) {
-      const msgs = JSON.parse(localStorage.getItem('cpw_chats') || '[]');
-      msgs.splice(index, 1);
-      localStorage.setItem('cpw_chats', JSON.stringify(msgs));
-      loadChatMessages();
-    };
-    loadChatMessages();
 
     // Utility helper to prevent HTML injection
     function escapeHtml(str) {
