@@ -21,6 +21,10 @@
   <meta property="og:site_name" content="Catholic PrayerWeb" />
   <meta name="google-site-verification" content="3stDQW9hTwIxAOmMYjO45z64O8Mi3EVnajz1htI60pA" />
 
+  <!-- Firebase App (Compat SDK) & Firestore -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+
   <script>
     if ("serviceWorker" in navigator) {
       window.addEventListener("load", function () {
@@ -287,37 +291,6 @@
       color: #94a3b8;
     }
 
-    .vote-btn {
-      background: transparent;
-      border: 1px solid #374151;
-      color: white;
-      padding: 6px 10px;
-      border-radius: 8px;
-      cursor: pointer;
-      font-size: 0.9rem;
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .vote-btn.active.up {
-      background: #10b981;
-      color: black;
-      border-color: #10b981;
-    }
-
-    .vote-btn.active.down {
-      background: #ef4444;
-      color: white;
-      border-color: #ef4444;
-    }
-
-    .vote-count {
-      color: #00e5ff;
-      font-weight: bold;
-      margin-right: 8px;
-    }
-
     .delete-btn {
       position: absolute;
       top: 15px;
@@ -335,25 +308,6 @@
 
     .delete-btn:hover {
       background: #dc2626;
-    }
-
-    .chat-msg-item .delete-btn {
-      top: 8px;
-      right: 8px;
-      padding: 2px 6px;
-      font-size: 0.62rem;
-      border-radius: 4px;
-      line-height: 1;
-    }
-
-    .chat-msg-item .chat-reply-btn {
-      right: 52px;
-      background: #00e5ff;
-      color: black;
-    }
-
-    .chat-msg-item .chat-reply-btn:hover {
-      background: #00b8cc;
     }
 
     .chat-widget-btn {
@@ -555,6 +509,23 @@
       z-index: 5;
     }
 
+    #notifyBtn {
+      display: block;
+      margin: 20px auto;
+      padding: 10px 20px;
+      background: #3a4356;
+      color: white;
+      border: 1px solid #00e5ff;
+      border-radius: 12px;
+      cursor: pointer;
+      font-family: "Orbitron", sans-serif;
+      font-size: 0.9rem;
+    }
+    #notifyBtn:hover {
+      background: #00e5ff;
+      color: black;
+    }
+
     #notes-widget-bubble {
       position: fixed;
       bottom: 20px;
@@ -731,8 +702,7 @@
     </div>
   </section>
 
-  <!-- Locate your button near the bottom of your body layout -->
-    <button id="notifyBtn">Prayer requests/Encouragement Notifications</button>
+  <button id="notifyBtn">Prayer requests/Encouragement Notifications</button>
   
   <div id="notes-widget-bubble" title="Open Notes" role="button" tabindex="0">🗒</div>
 
@@ -786,14 +756,13 @@
       </div>
     </div>
 
-     <div class="prayer-card" data-name="Glory Be">
+     <div class="prayer-card" data-name="Grace Before Meals">
       <div class="prayer-info">
         <h3>Grace Before Meals</h3>
         <p>A Prayer asking God to bless our food</p>
         <button class="play-btn" onclick="openPrayer('https://gmw1-9.github.io/Catholic-PrayerWeb-by-GMW1-9/Grace%20Before%20Meals%20.html')">PRAY</button>
       </div>
     </div>
-    
     
     <div class="prayer-card" data-name="Guardian Angel Prayer">
       <div class="prayer-info">
@@ -915,63 +884,259 @@
   </div>
 
   <footer>© 2026 GMW1:9</footer>
-  <script>
-    // Notification button (kept from original)
-    (function () {
-      const button = document.getElementById('notifyBtn');
-      if (!button) return;
-      button.addEventListener('click', () => {
-        if (!('Notification' in window)) {
-          alert('This browser does not support desktop notifications.');
-          return;
-        }
-        Notification.requestPermission().then((permission) => {
-          if (permission === 'granted') {
-            new Notification('Catholic PrayerWeb', {
-              body: 'You will receive notifications for new prayer requests and encouragements when available.',
-            });
-          } else {
-            alert('Notifications blocked or dismissed.');
-          }
-        });
-      });
-    })();
 
-    // Placeholder functions used in the page (minimal implementations)
+  <script>
+    // ==========================================
+    // 1. FIREBASE CONFIGURATION & INITIALIZATION
+    // ==========================================
+    // Replace the object below with your own Firebase project configuration credentials
+    const firebaseConfig = {
+      apiKey: "AIzaSyDwnxuI_EbCB2vTT2CzOhOwumuoqdZ5huM",
+  authDomain: "gmw-1-9.firebaseapp.com",
+  databaseURL: "https://gmw-1-9-default-rtdb.firebaseio.com",
+  projectId: "gmw-1-9",
+  storageBucket: "gmw-1-9.firebasestorage.app",
+  messagingSenderId: "994319050351",
+  appId: "1:994319050351:web:fc8b07dcd89bdc8b034f9a",
+  measurementId: "G-ZJFD1GVXS6"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    // Notifications Button
+    document.getElementById('notifyBtn').addEventListener('click', () => {
+      if (!('Notification' in window)) {
+        alert('This browser does not support desktop notifications.');
+        return;
+      }
+      Notification.requestPermission().then((permission) => {
+        if (permission === 'granted') {
+          new Notification('Catholic PrayerWeb', {
+            body: 'You will receive notifications for new prayer requests and encouragements when available.',
+          });
+        } else {
+          alert('Notifications blocked or dismissed.');
+        }
+      });
+    });
+
+    // Navigation and Modals
     function scrollToPrayers() {
-      const el = document.getElementById('prayersGrid');
-      if (el) el.scrollIntoView({ behavior: 'smooth' });
+      document.getElementById('prayersGrid').scrollIntoView({ behavior: 'smooth' });
     }
 
     function openNewsModal() {
-      const m = document.getElementById('newsModal');
-      if (m) m.style.display = 'flex';
+      document.getElementById('newsModal').style.display = 'flex';
     }
     function closeNewsModal() {
-      const m = document.getElementById('newsModal');
-      if (m) m.style.display = 'none';
+      document.getElementById('newsModal').style.display = 'none';
     }
 
     function openPrayer(url) {
-      const modal = document.getElementById('prayerModal');
-      const frame = document.getElementById('prayerFrame');
-      if (frame) frame.src = url;
-      if (modal) modal.style.display = 'flex';
+      document.getElementById('prayerFrame').src = url;
+      document.getElementById('prayerModal').style.display = 'flex';
     }
     function closePrayer() {
-      const modal = document.getElementById('prayerModal');
-      const frame = document.getElementById('prayerFrame');
-      if (frame) frame.src = '';
-      if (modal) modal.style.display = 'none';
+      document.getElementById('prayerFrame').src = '';
+      document.getElementById('prayerModal').style.display = 'none';
     }
 
-    // Chat toggle (basic)
+    // Search filter for prayer cards
+    document.getElementById('search').addEventListener('input', (e) => {
+      const term = e.target.value.toLowerCase();
+      const cards = document.querySelectorAll('.prayer-card');
+      cards.forEach(card => {
+        const name = card.getAttribute('data-name')?.toLowerCase() || '';
+        const text = card.textContent.toLowerCase();
+        if (name.includes(term) || text.includes(term)) {
+          card.style.display = 'block';
+        } else {
+          card.style.display = 'none';
+        }
+      });
+    });
+
+    // Notes Widget Functionality (LocalStorage)
+    const bubble = document.getElementById('notes-widget-bubble');
+    const panel = document.getElementById('notes-widget-panel');
+    const closeNotesBtn = document.getElementById('closeNotesButton');
+    const noteInput = document.getElementById('noteInput');
+    const addNoteBtn = document.getElementById('addNoteButton');
+    const notesList = document.getElementById('notesList');
+
+    bubble.addEventListener('click', () => {
+      panel.style.display = panel.style.display === 'flex' ? 'none' : 'flex';
+    });
+
+    closeNotesBtn.addEventListener('click', () => {
+      panel.style.display = 'none';
+    });
+
+    function loadNotes() {
+      const notes = JSON.parse(localStorage.getItem('cpw_notes') || '[]');
+      notesList.innerHTML = '';
+      notes.forEach((note, index) => {
+        const div = document.createElement('div');
+        div.className = 'note';
+        div.innerHTML = `
+          <div class="note-content">
+            <span class="note-text">${escapeHtml(note.text)}</span>
+            <span class="note-time">${note.time}</span>
+          </div>
+          <button class="delete" onclick="deleteNote(${index})">Delete</button>
+        `;
+        notesList.appendChild(div);
+      });
+    }
+
+    function addNote() {
+      const text = noteInput.value.trim();
+      if (!text) return;
+      const notes = JSON.parse(localStorage.getItem('cpw_notes') || '[]');
+      const time = new Date().toLocaleString();
+      notes.unshift({ text, time });
+      localStorage.setItem('cpw_notes', JSON.stringify(notes));
+      noteInput.value = '';
+      loadNotes();
+    }
+
+    window.deleteNote = function(index) {
+      const notes = JSON.parse(localStorage.getItem('cpw_notes') || '[]');
+      notes.splice(index, 1);
+      localStorage.setItem('cpw_notes', JSON.stringify(notes));
+      loadNotes();
+    };
+
+    addNoteBtn.addEventListener('click', addNote);
+    noteInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') addNote();
+    });
+    loadNotes();
+
+    // ==========================================
+    // 2. COMMUNITY PRAYER WALL WITH FIREBASE FIRESTORE
+    // ==========================================
+    const prayerForm = document.getElementById('prayerForm');
+    const prayerList = document.getElementById('prayerList');
+    const statusMsg = document.getElementById('statusMsg');
+
+    // Real-time listener using Firebase Firestore
+    function loadPrayersFirebase() {
+      statusMsg.textContent = "Connecting to live prayer wall...";
+      db.collection('prayers')
+        .orderBy('timestamp', 'desc')
+        .onSnapshot((snapshot) => {
+          prayerList.innerHTML = '';
+          statusMsg.textContent = "Connected live!";
+          
+          if (snapshot.empty) {
+            prayerList.innerHTML = '<p style="color: #94a3b8; text-align: center;">No prayers yet. Be the first to share one!</p>';
+            return;
+          }
+
+          snapshot.forEach((doc) => {
+            const p = doc.data();
+            const item = document.createElement('div');
+            item.className = 'prayer-item';
+            item.innerHTML = `
+              <h4>${escapeHtml(p.name)} (${p.type === 'encouragement' ? 'Encouragement' : 'Prayer Request'})</h4>
+              <p>${escapeHtml(p.text)}</p>
+              <span>${p.time || ''}</span>
+              <button class="delete-btn" onclick="deletePrayerFirebase('${doc.id}')">Delete</button>
+            `;
+            prayerList.appendChild(item);
+          });
+        }, (error) => {
+          console.error("Error loading prayers: ", error);
+          statusMsg.textContent = "Error connecting to database. Check console/Firebase rules.";
+        });
+    }
+
+    // Submit a new prayer to Firestore
+    prayerForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const name = document.getElementById('prayerName').value.trim();
+      const type = document.getElementById('prayerType').value;
+      const text = document.getElementById('prayerText').value.trim();
+      if (!name || !text) return;
+
+      db.collection('prayers').add({
+        name: name,
+        type: type,
+        text: text,
+        time: new Date().toLocaleString(),
+        timestamp: firebase.firestore.FieldValue.serverTimestamp()
+      }).then(() => {
+        prayerForm.reset();
+      }).catch((error) => {
+        alert("Error adding prayer: " + error.message);
+      });
+    });
+
+    // Delete a prayer from Firestore
+    window.deletePrayerFirebase = function(docId) {
+      if (confirm("Are you sure you want to delete this post?")) {
+        db.collection('prayers').doc(docId).delete().catch((error) => {
+          alert("Error removing prayer: " + error.message);
+        });
+      }
+    };
+
+    // Initialize the Firebase prayer feed on page load
+    loadPrayersFirebase();
+
+    // Chat Popup & Founder Messages Logic
     function toggleChatPopup() {
-      const p = document.getElementById('chatPopup');
-      if (!p) return;
-      p.style.display = p.style.display === 'flex' ? 'none' : 'flex';
+      const popup = document.getElementById('chatPopup');
+      popup.style.display = popup.style.display === 'flex' ? 'none' : 'flex';
     }
 
+    const founderChatForm = document.getElementById('founderChatForm');
+    const chatMessages = document.getElementById('chatMessages');
+
+    function loadChatMessages() {
+      const msgs = JSON.parse(localStorage.getItem('cpw_chats') || '[]');
+      chatMessages.innerHTML = '';
+      msgs.forEach((m, index) => {
+        const div = document.createElement('div');
+        div.className = 'chat-msg-item';
+        div.innerHTML = `
+          <h5>${escapeHtml(m.name)}</h5>
+          <p>${escapeHtml(m.text)}</p>
+          <span>${m.time}</span>
+          <button class="delete-btn" style="top:8px; right:8px; padding:2px 6px; font-size:0.62rem;" onclick="deleteChat(${index})">Delete</button>
+        `;
+        chatMessages.appendChild(div);
+      });
+    }
+
+    founderChatForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const name = document.getElementById('chatName').value.trim();
+      const text = document.getElementById('chatText').value.trim();
+      if (!name || !text) return;
+
+      const msgs = JSON.parse(localStorage.getItem('cpw_chats') || '[]');
+      msgs.unshift({ name, text, time: new Date().toLocaleString() });
+      localStorage.setItem('cpw_chats', JSON.stringify(msgs));
+
+      document.getElementById('chatText').value = '';
+      loadChatMessages();
+    });
+
+    window.deleteChat = function(index) {
+      const msgs = JSON.parse(localStorage.getItem('cpw_chats') || '[]');
+      msgs.splice(index, 1);
+      localStorage.setItem('cpw_chats', JSON.stringify(msgs));
+      loadChatMessages();
+    };
+    loadChatMessages();
+
+    // Utility helper to prevent HTML injection
+    function escapeHtml(str) {
+      return String(str).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+    }
   </script>
 </body>
 </html>
